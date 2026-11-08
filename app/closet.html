@@ -1497,10 +1497,18 @@ function subscribe(name, key, sortDesc) {
   });
 }
 
+const APP_LINK = "https://claude.ai/artifact/R4sEkrMeJu1x2P79sqEZvG";
 async function showDiag() {
   const d = $("#diag");
   if (!S.db) { d.hidden = true; return; }
   const issues = [];
+  if (/Android/.test(navigator.userAgent) && /; wv\)/.test(navigator.userAgent)) {
+    const copy = h("button", { class: "btn small", onclick: async () => { try { await navigator.clipboard.writeText(APP_LINK); copy.textContent = "Link copiado ✓"; } catch (_) { const r = document.createRange(); r.selectNodeContents(link); getSelection().removeAllRanges(); getSelection().addRange(r); } } }, "Copiar link");
+    const link = h("code", { style: "user-select:all;overflow-wrap:anywhere" }, APP_LINK);
+    d.hidden = false;
+    fill(d, h("strong", {}, "Para adicionar fotos, abra no Chrome. "), "O app do Claude no Android não abre a galeria nesta página. Copie o link, cole no Chrome e entre na sua conta do Claude: ", link, " ", copy);
+    return;
+  }
   if (!S.assets) issues.push("o armazenamento de fotos não está liberado nesta tela, então não dá para adicionar peças");
   if (!S.sample) issues.push("o Claude não está disponível nesta tela");
   else if (!S.imagesOK) issues.push("o Claude não consegue ver fotos nesta tela; as peças serão salvas e você preenche a ficha");
