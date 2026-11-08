@@ -273,7 +273,7 @@ dialog form { display: grid; gap: 12px; padding: 18px; }
 .seasons label { display: flex; gap: 6px; align-items: center; }
 .dlg-acts { display: flex; gap: 8px; flex-wrap: wrap; justify-content: space-between; }
 
-.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 999px; font-size: .9rem; z-index: 20; max-width: calc(100vw - 32px); }
+.toast { position: fixed; left: 50%; transform: translateX(-50%); top: calc(env(safe-area-inset-top, 0px) + 112px); background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 999px; font-size: .9rem; z-index: 20; max-width: calc(100vw - 32px); }
 footer { color: var(--muted); font-size: .82rem; padding-block: 0 32px; }
 </style>
 
@@ -308,6 +308,7 @@ footer { color: var(--muted); font-size: .82rem; padding-block: 0 32px; }
       </label>
       <input type="search" id="q" class="search" placeholder="Buscar: preto, linho, vestido, Zara…" aria-label="Buscar peças">
     </div>
+    <div id="diag" class="banner" hidden></div>
     <div id="queue" class="queue" hidden></div>
     <div id="shop-out" hidden></div>
     <div id="closet"></div>
@@ -753,16 +754,23 @@ function pieceFromAI(p, photo, src, opts) {
 }
 
 async function addFiles(files, opts) {
-  if (!files.length) return;
-  if (!S.db || !S.assets) { toast(S.db ? errText({ code: "not_granted_assets" }) : "Abra esta página no claude.ai para salvar peças."); return; }
-  if (!S.sample || !S.imagesOK) { toast("O Claude precisa ver as fotos. Abra a página no claude.ai."); return; }
   const q = $("#queue"); q.hidden = false;
+  if (!files.length) return;
+  location.hash = "#armario";
+  if (!S.db || !S.assets) {
+    q.prepend(h("div", { class: "qrow" }, h("span", { class: "st err", style: "white-space:normal" },
+      !S.db ? "Esta tela não consegue salvar dados. Abra o Closet Virtual pelo claude.ai, logada na sua conta." :
+      "Esta tela não liberou o armazenamento de fotos. Toque em Verificar permissões, logo acima, e ative as fotos.")));
+    q.scrollIntoView({ block: "nearest" });
+    return;
+  }
   const jobs = [...files].map(file => {
     const st = h("span", { class: "st" }, "Na fila");
     const row = h("div", { class: "qrow" }, h("span", { class: "fn" }, file.name || "foto"), st);
     q.prepend(row);
     return { file, st, opts: opts || {} };
   });
+  q.scrollIntoView({ block: "nearest" });
   let i = 0;
   const worker = async () => { while (i < jobs.length) await processFile(jobs[i++]); };
   await Promise.all([worker(), worker()]);
@@ -770,16 +778,29 @@ async function addFiles(files, opts) {
 }
 async function processFile({ file, st, opts }) {
   const set = (t, k) => { st.textContent = t; st.className = "st " + (k || ""); };
+  let img, full;
   try {
     set("Lendo foto…");
-    const img = await loadImage(file);
-    const full = await toJpeg(img, 1280, null, 0.82);
-    set("Identificando peças…");
-    const res = await S.sample.json(CLASSIFY_PROMPT(opts), { images: [full] });
-    const found = (res && Array.isArray(res.pecas) ? res.pecas : []).filter(p => p && p.nome).slice(0, 8);
-    if (!found.length) { set("Nenhuma peça encontrada", "warn"); return; }
+    img = await loadImage(file);
+    full = await toJpeg(img, 1280, null, 0.82);
+  } catch (e) { set("Não consegui abrir essa foto. Tente JPG ou PNG.", "err"); return; }
+  let found = null, why = "";
+  if (S.sample) {
+    try {
+      set("Identificando peças…");
+      const res = await S.sample.json(CLASSIFY_PROMPT(opts), { images: [full] });
+      found = (res && Array.isArray(res.pecas) ? res.pecas : []).filter(p => p && p.nome).slice(0, 8);
+      if (!found.length) { found = null; why = "o Claude não reconheceu peças"; }
+    } catch (e) { why = e && e.code === "not_granted" ? "você não permitiu o Claude" : errText(e).replace(/\.$/, ""); }
+  } else why = "o Claude não consegue ver fotos nesta tela";
+  try {
     set("Salvando…");
     const src = await S.assets.upload(full, { type: "image/jpeg" });
+    if (!found) {
+      await S.db.collection("pieces").add(pieceFromAI({ nome: "Peça nova", categoria: opts && opts.cat }, src.id, src.id, opts));
+      set("Salva sem ficha (" + why + "). Toque na peça para preencher.", "warn");
+      return;
+    }
     for (const p of found) {
       const box = normBox(p.caixa);
       let photo = src.id;
@@ -791,7 +812,7 @@ async function processFile({ file, st, opts }) {
     }
     set(found.length === 1 ? "1 peça adicionada" : found.length + " peças adicionadas", "ok");
   } catch (e) {
-    set(errText(e), "err");
+    set("Não consegui salvar: " + errText(e) + (e && e.code ? " [" + e.code + "]" : ""), "err");
   }
 }
 
@@ -1436,6 +1457,12 @@ function setup() {
   $("#pf-orig").addEventListener("change", (e) => { const p = S.byId[S.editing]; if (p) $("#pf-img").src = imgSrc(e.target.checked && p.src ? p.src : p.photo); });
   $("#add-files").addEventListener("change", (e) => { const f = [...e.target.files]; e.target.value = ""; addFiles(f); });
   $("#shop-file").addEventListener("change", (e) => { const f = e.target.files[0]; e.target.value = ""; if (f) shopCheck(f); });
+  document.addEventListener("paste", (e) => {
+    const files = [...(e.clipboardData?.files || [])].filter(f => f.type.startsWith("image/"));
+    if (!files.length) return;
+    e.preventDefault();
+    if ((location.hash.slice(1) || "armario") === "inspiracao") pickInsp(files[0]); else addFiles(files);
+  });
   $("#q").addEventListener("input", (e) => { S.filter.q = e.target.value; renderCloset(); });
   fill($("#look-presets"), ...PRESETS.map(p => h("button", { class: "chip", type: "button", onclick: () => { const ta = $("#look-req"); ta.value = ta.value.trim() ? ta.value.trim() + ". " + p : p; ta.focus(); } }, p)));
   $("#look-go").addEventListener("click", genLooks);
@@ -1470,12 +1497,33 @@ function subscribe(name, key, sortDesc) {
   });
 }
 
+async function showDiag() {
+  const d = $("#diag");
+  if (!S.db) { d.hidden = true; return; }
+  const issues = [];
+  if (!S.assets) issues.push("o armazenamento de fotos não está liberado nesta tela, então não dá para adicionar peças");
+  if (!S.sample) issues.push("o Claude não está disponível nesta tela");
+  else if (!S.imagesOK) issues.push("o Claude não consegue ver fotos nesta tela; as peças serão salvas e você preenche a ficha");
+  let st = {};
+  if (S.perms) { try { st = await S.perms.state(); } catch (_) {} }
+  const denied = Object.entries(st).filter(([, v]) => v === "denied").map(([k]) => ({ assets: "fotos", sample: "Claude", db: "dados" }[k] || k));
+  if (denied.length) issues.push("você recusou a permissão de " + denied.join(", "));
+  if (!issues.length) { d.hidden = true; return; }
+  d.hidden = false;
+  fill(d, h("strong", {}, "Atenção: "), issues.join("; ") + ". ",
+    S.perms ? h("button", { class: "btn small", style: "margin-top:8px", onclick: async () => {
+      try { await S.perms.manage(); } catch (_) { try { await S.perms.request(); } catch (_) {} }
+      location.reload();
+    } }, "Verificar permissões") : null);
+}
 async function boot() {
   setup();
   const use = (n) => (window.claude && typeof window.claude.use === "function") ? window.claude.use(n).catch(() => null) : Promise.resolve(null);
   const [db, assets, sample] = await Promise.all([use("db"), use("assets"), use("sample")]);
   S.db = db; S.assets = assets; S.sample = sample;
   if (sample) { try { const lim = await sample.limits(); S.imagesOK = !!(lim && lim.images); } catch (_) { S.imagesOK = false; } }
+  S.perms = await use("permissions");
+  showDiag();
   if (!db) {
     const b = $("#env-banner"); b.hidden = false;
     fill(b, h("strong", {}, "Modo de visualização. "), "Abra esta página no claude.ai, com a sua conta, para guardar peças e usar o assistente.");
