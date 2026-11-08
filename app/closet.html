@@ -66,6 +66,7 @@ header.top .wrap { display: flex; align-items: center; gap: 16px; padding-block:
 .brand { display: flex; align-items: baseline; gap: 8px; margin-right: auto; }
 .brand h1 { font-size: 1.3rem; letter-spacing: -.01em; }
 .brand span { font-family: var(--f-mono); font-size: .72rem; color: rgba(255,255,255,.65); letter-spacing: .06em; text-transform: uppercase; }
+@media (max-width: 480px) { nav.tabs { width: 100%; justify-content: space-between; } nav.tabs a { padding: 6px 9px !important; font-size: .88rem !important; } }
 nav.tabs { display: flex; gap: 4px; overflow-x: auto; max-width: 100%; scrollbar-width: none; }
 nav.tabs a { text-decoration: none; color: rgba(255,255,255,.72); font-weight: 600; padding: 7px 12px; border-radius: 999px; white-space: nowrap; font-size: .93rem; }
 nav.tabs a:hover { color: #fff; background: rgba(255,255,255,.12); }
@@ -153,6 +154,33 @@ label.field small { font-weight: 400; color: var(--muted); }
 .alb-add:hover { border-color: var(--rc); background: var(--rc); } .alb-add:hover::before { color: #fff; }
 h2 { box-shadow: inset 0 -0.32em 0 var(--accent-soft); display: inline; }
 .head h2 { justify-self: start; }
+
+.save-wrap { display: inline-flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+select.mini-sel { width: auto; padding: 5px 8px; font-size: .85rem; }
+.chip.add { border-style: dashed; color: var(--accent); border-color: var(--accent); font-weight: 600; }
+.look-tags { display: flex; gap: 4px; flex-wrap: wrap; }
+.pill.alb { background: var(--accent-soft); color: var(--ink); }
+
+/* dossiê */
+.strip { display: flex; height: 18px; border-radius: 999px; overflow: hidden; box-shadow: var(--shadow); }
+.strip i { flex: 1; }
+.dos-list-wrap { display: grid; gap: 14px; }
+.dos { border-radius: 16px; overflow: hidden; background: var(--surface); box-shadow: var(--shadow); }
+.dos-head { width: 100%; display: grid; grid-template-columns: 56px minmax(0, 1fr); border: 0; padding: 0; cursor: pointer; text-align: left; background: var(--dc); color: #fff; min-height: 112px; }
+.dos-eye { background: #000; color: #fff; display: grid; place-items: center; font-size: 1.6rem; font-weight: 300; }
+.dos-title { display: grid; align-content: center; padding: 18px 20px; gap: 2px; }
+.dos-kind { font-size: 1.05rem; opacity: .9; }
+.dos-name { font-family: var(--f-display); font-weight: 700; font-size: 2rem; line-height: 1.05; overflow-wrap: anywhere; }
+.d-bio { --dc: #007a52; } .d-est { --dc: #1f35b8; } .d-est2 { --dc: #111016; } .d-car { --dc: linear-gradient(110deg, #c4127a, #5b17a8 55%, #1f35b8); }
+.dos-head { background: var(--dc); }
+.dos-body { padding: 18px 20px 20px; display: grid; gap: 10px; }
+.dos-body h4 { margin: 6px 0 0; font-family: var(--f-mono); font-size: .72rem; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); font-weight: 500; }
+.dos-list { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+.sws { display: grid; gap: 10px 8px; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); }
+.sw { display: grid; gap: 4px; font-size: .78rem; text-align: center; }
+.sw i { display: block; width: 100%; max-width: 52px; margin: 0 auto; aspect-ratio: 1; border-radius: 50%; border: 1px solid var(--line); }
+.sws.dim .sw i { position: relative; }
+.sws.dim .sw i::after { content: ""; position: absolute; inset: 46% -4%; height: 2px; background: var(--ink); transform: rotate(-35deg); opacity: .7; }
 
 /* picker */
 dialog.pick-dlg { width: min(760px, calc(100vw - 24px)); }
@@ -257,6 +285,7 @@ footer { color: var(--muted); font-size: .82rem; padding-block: 0 32px; }
       <a href="#looks" data-tab="looks">Looks</a>
       <a href="#inspiracao" data-tab="inspiracao">Inspiração</a>
       <a href="#mala" data-tab="mala">Mala</a>
+      <a href="#dossie" data-tab="dossie">Dossiê</a>
     </nav>
   </div>
 </header>
@@ -307,7 +336,7 @@ footer { color: var(--muted); font-size: .82rem; padding-block: 0 32px; }
       <div id="look-status"></div>
     </div>
     <div id="look-out" class="looks"></div>
-    <div class="alb-head" style="flex-wrap:wrap"><h2>Looks salvos</h2><button class="btn" id="manual-look">+ Montar meu look</button></div>
+    <div class="alb-head" style="flex-wrap:wrap"><h2>Meus looks</h2><button class="btn" id="manual-look">+ Montar meu look</button></div>
     <div class="chips" id="saved-filter"></div>
     <div id="saved-looks" class="looks"></div>
   </section>
@@ -374,6 +403,10 @@ footer { color: var(--muted); font-size: .82rem; padding-block: 0 32px; }
       </div>
       <div id="trip-list" class="trips"></div>
     </div>
+  </section>
+  <!-- DOSSIÊ -->
+  <section class="view" id="v-dossie" data-view="dossie" hidden>
+    <div id="dossie-out" style="display:grid;gap:20px"></div>
   </section>
 </main>
 <footer class="wrap" id="foot">Fotos e catálogo ficam guardados nesta página, só para você.</footer>
@@ -445,8 +478,8 @@ const PRESETS = ["Trabalho, dia normal", "Reunião importante", "Jantar a dois",
 
 const S = {
   db: null, assets: null, sample: null, imagesOK: false,
-  pieces: [], looks: [], trips: [], albums: [], byId: {},
-  loaded: { pieces: false, looks: false, trips: false, albums: false },
+  pieces: [], looks: [], trips: [], albums: [], lookAlbums: [], byId: {},
+  loaded: { pieces: false, looks: false, trips: false, albums: false, lookAlbums: false, profile: false }, profile: null, dossieOpen: null, dossieEdit: false, newLookAlbum: false, lookAlbumOpen: null,
   filter: { q: "", view: "home", key: null }, savedFilter: "todos", newAlbum: false, newTrip: false,
   editing: null, openTrip: null,
   insp: { file: null, blob: null, result: null },
@@ -566,7 +599,7 @@ async function ask(prompt, opts, ui) {
 }
 
 // ---------- routing ----------
-const TABS = ["armario", "looks", "inspiracao", "mala"];
+const TABS = ["armario", "looks", "inspiracao", "mala", "dossie"];
 function route() {
   const t = TABS.includes(location.hash.slice(1)) ? location.hash.slice(1) : "armario";
   document.querySelectorAll("[data-view]").forEach(v => { v.hidden = v.dataset.view !== t; });
@@ -858,12 +891,13 @@ async function deletePiece() {
 }
 
 // shop mode
-const SHOP_PROMPT = (cat) => `Estou numa loja pensando em comprar a peça da foto. Compare com meu guarda-roupa e me ajude a decidir.
+const SHOP_PROMPT = (cat) => `Estou numa loja pensando em comprar a peça da foto. Compare com meu guarda-roupa e com meu dossiê e me ajude a decidir.
+${profileText()}
 ${CATALOG_HEAD}
 ${cat}
 
 Responda em português do Brasil, só com JSON:
-{"item":"descrição curta da peça da foto","parecidas":[{"id":"id de uma peça minha muito parecida","nota":"o que muda"}],"combina_com":["ids de peças minhas que combinam com ela"],"looks_possiveis":3,"veredito":"2 frases diretas: vale a pena ou já tenho algo equivalente?"}
+{"item":"descrição curta da peça da foto","parecidas":[{"id":"id de uma peça minha muito parecida","nota":"o que muda"}],"combina_com":["ids de peças minhas que combinam com ela"],"looks_possiveis":3,"cartela":"a cor está ou não na minha cartela, em 1 frase curta","estilo":"combina ou não com meu biotipo e estilo, em 1 frase curta","veredito":"2 frases diretas: vale a pena ou já tenho algo equivalente?"}
 Use apenas ids que existem na lista. "parecidas" fica vazia se eu não tiver nada parecido.`;
 async function shopCheck(file) {
   const out = $("#shop-out"); out.hidden = false;
@@ -885,6 +919,8 @@ async function shopCheck(file) {
           h("span", { class: "mono" }, "Na loja"),
           h("h3", {}, r.item || "Peça da foto"),
           h("p", {}, r.veredito || ""),
+          r.cartela ? h("p", { class: "lede" }, h("strong", {}, "Cartela: "), r.cartela) : null,
+          r.estilo ? h("p", { class: "lede" }, h("strong", {}, "Estilo: "), r.estilo) : null,
           h("div", { class: "chips" },
             h("span", { class: "pill " + (parecidas.length ? "warn" : "ok") }, parecidas.length ? "Você já tem algo parecido" : "Nada parecido no armário"),
             Number(r.looks_possiveis) ? h("span", { class: "pill" }, "≈ " + Number(r.looks_possiveis) + " looks com o que você tem") : null)
@@ -913,6 +949,7 @@ function lookCard(look, opts) {
     look.inspo ? h("div", { style: "display:flex;gap:10px;align-items:center" }, h("img", { src: imgSrc(look.inspo), alt: "Inspiração", style: "width:44px;height:56px;object-fit:cover;border-radius:6px" }), h("span", { class: "mono" }, "a partir de uma inspiração")) : null,
     h("div", { class: "collage n" + Math.min(ids.length, 6) }, ids.map(thumbBtn)),
     h("h3", {}, look.titulo || "Look"),
+    opts && opts.tags && opts.tags.length ? h("div", { class: "look-tags" }, opts.tags.map(t => h("span", { class: "pill alb" }, t))) : null,
     h("ul", { class: "names" }, ids.map(id => h("li", {}, S.byId[id].name))),
     look.porque ? h("p", { class: "why" }, look.porque) : null,
     look.dica ? h("p", { class: "tip" }, look.dica) : null,
@@ -922,6 +959,7 @@ function lookCard(look, opts) {
 }
 const LOOKS_PROMPT = ({ req, anchor, n, cat }) => `Você é uma stylist pessoal. Monte ${n} looks diferentes entre si usando SOMENTE peças do guarda-roupa abaixo, citando os ids exatos.
 Pedido: ${req || "looks bonitos para o dia a dia"}
+${profileText()}
 ${anchor ? "Todos os looks devem incluir a peça de id " + anchor + "." : ""}
 
 ${CATALOG_HEAD}
@@ -950,36 +988,68 @@ async function genLooks() {
     }));
   } catch (e) { say(status, errText(e), e.code === "cancelled" ? "" : "err"); }
 }
+const curLookAlbum = () => (S.savedFilter !== "todos" && S.savedFilter !== "sem") ? S.savedFilter : "";
 function saveLookBtn(look, beforeSave) {
+  const sel = S.lookAlbums.length ? h("select", { class: "mini-sel", "aria-label": "Álbum do look" },
+    h("option", { value: "" }, "Sem álbum"), S.lookAlbums.map(a => h("option", { value: a.id, selected: a.id === curLookAlbum() }, a.name))) : null;
   const b = h("button", { class: "btn small primary", onclick: async () => {
     if (!S.db) { toast("Abra esta página no claude.ai para salvar."); return; }
     b.disabled = true; b.textContent = "Salvando…";
     try {
-      const data = Object.assign({}, look, { createdAt: Date.now() });
+      const data = Object.assign({}, look, { albums: sel && sel.value ? [sel.value] : [], createdAt: Date.now() });
       if (beforeSave) Object.assign(data, await beforeSave());
       await S.db.collection("looks").add(data);
-      b.textContent = "Salvo ✓";
+      b.textContent = "Salvo ✓"; if (sel) sel.disabled = true;
     } catch (e) { b.disabled = false; b.textContent = "Salvar look"; toast(errText(e)); }
   } }, "Salvar look");
-  return b;
+  return h("span", { class: "save-wrap" }, b, sel);
 }
 function renderSaved() {
   const out = $("#saved-looks");
   const f = $("#saved-filter"); fill(f);
-  const ORIG = [["todos", "Todos"], ["manual", "Montados por mim"], ["pedido", "Pedidos ao Claude"], ["inspiracao", "Inspirações"]];
-  if (S.looks.length) ORIG.forEach(([k, l]) => {
-    const c = k === "todos" ? S.looks.length : S.looks.filter(x => x.origem === k).length;
-    if (c || k === "todos") f.append(h("button", { class: "chip", "aria-pressed": String(S.savedFilter === k), onclick: () => { S.savedFilter = k; renderSaved(); } }, l, h("b", {}, c)));
-  });
+  const inAlbum = (l, id) => (l.albums || []).includes(id);
+  const chip = (key, label, c) => h("button", { class: "chip", "aria-pressed": String(S.savedFilter === key), onclick: () => { S.savedFilter = key; S.lookAlbumOpen = null; renderSaved(); } }, label, h("b", {}, c));
+  const loose = S.looks.filter(l => !(l.albums || []).some(id => S.lookAlbums.some(a => a.id === id))).length;
+  f.append(chip("todos", "Todos", S.looks.length));
+  S.lookAlbums.forEach(a => f.append(chip(a.id, a.name, S.looks.filter(l => inAlbum(l, a.id)).length)));
+  if (S.lookAlbums.length && loose) f.append(chip("sem", "Sem álbum", loose));
+  if (S.newLookAlbum) {
+    f.append(h("form", { class: "alb-new", style: "flex:1 1 260px", onsubmit: async (e) => {
+      e.preventDefault(); const name = e.target.querySelector("input").value.trim(); if (!name || !S.db) return;
+      try { const ref = await S.db.collection("lookAlbums").add({ name: name.slice(0, 40), createdAt: Date.now() }); S.newLookAlbum = false; S.savedFilter = ref.id; renderSaved(); } catch (err) { toast(errText(err)); }
+    } }, h("input", { type: "text", id: "new-look-album", placeholder: "Looks de festa, Looks de inverno…", "aria-label": "Nome do álbum de looks" }),
+      h("button", { class: "btn small primary", type: "submit" }, "Criar"),
+      h("button", { class: "btn small ghost", type: "button", onclick: () => { S.newLookAlbum = false; renderSaved(); } }, "Cancelar")));
+  } else {
+    f.append(h("button", { class: "chip add", onclick: () => { S.newLookAlbum = true; renderSaved(); setTimeout(() => $("#new-look-album")?.focus(), 0); } }, "+ Novo álbum"));
+  }
   if (!S.loaded.looks) { fill(out); return; }
-  const list = S.looks.filter(l => S.savedFilter === "todos" || l.origem === S.savedFilter);
-  if (!list.length) { fill(out, h("p", { class: "lede" }, "Os looks que você salvar aparecem aqui.")); return; }
-  fill(out, ...list.map(l => {
+  const album = S.lookAlbums.find(a => a.id === S.savedFilter);
+  const list = S.looks.filter(l => S.savedFilter === "todos" ? true : S.savedFilter === "sem" ? !(l.albums || []).some(id => S.lookAlbums.some(a => a.id === id)) : inAlbum(l, S.savedFilter));
+  const albumBar = album ? (() => {
+    const del = h("button", { class: "btn small danger", onclick: async () => {
+      if (!del.dataset.armed) { del.dataset.armed = "1"; del.textContent = "Toque de novo (os looks continuam salvos)"; return; }
+      try {
+        for (const l of S.looks.filter(x => inAlbum(x, album.id))) await S.db.collection("looks").doc(l.id).update({ albums: l.albums.filter(x => x !== album.id) });
+        await S.db.collection("lookAlbums").doc(album.id).delete(); S.savedFilter = "todos"; renderSaved();
+      } catch (e) { toast(errText(e)); }
+    } }, "Excluir álbum");
+    return h("div", { class: "alb-head", style: "grid-column:1/-1;flex-wrap:wrap" }, h("h3", { style: "font-size:1.2rem" }, album.name, " ", h("span", { class: "mono" }, String(list.length))), del);
+  })() : null;
+  if (!list.length) { fill(out, albumBar, h("p", { class: "lede", style: "grid-column:1/-1" }, album ? "Nenhum look neste álbum ainda. Em qualquer look salvo, toque em Álbuns para colocar aqui, ou monte um look novo com este álbum aberto." : "Os looks que você salvar aparecem aqui.")); return; }
+  fill(out, albumBar, ...list.map(l => {
     const del = h("button", { class: "btn small ghost", onclick: async () => {
       if (!del.dataset.armed) { del.dataset.armed = "1"; del.textContent = "Confirmar"; return; }
       try { await S.db.collection("looks").doc(l.id).delete(); if (l.inspo && S.assets && !S.looks.some(x => x.id !== l.id && x.inspo === l.inspo)) { try { await S.assets.delete(l.inspo); } catch (_) {} } } catch (e) { toast(errText(e)); }
     } }, "Remover");
-    return lookCard(l, { actions: [del] });
+    const open = S.lookAlbumOpen === l.id;
+    const albBtn = S.lookAlbums.length ? h("button", { class: "btn small" + (open ? " dark" : ""), onclick: () => { S.lookAlbumOpen = open ? null : l.id; renderSaved(); } }, "Álbuns") : null;
+    const names = S.lookAlbums.filter(a => inAlbum(l, a.id)).map(a => a.name);
+    const picker = open ? h("div", { class: "chips", style: "flex-basis:100%" }, S.lookAlbums.map(a => h("button", { class: "chip", "aria-pressed": String(inAlbum(l, a.id)), onclick: async () => {
+      const albums = inAlbum(l, a.id) ? l.albums.filter(x => x !== a.id) : [...(l.albums || []), a.id];
+      try { await S.db.collection("looks").doc(l.id).update({ albums }); } catch (e) { toast(errText(e)); }
+    } }, a.name))) : null;
+    return lookCard(l, { tags: names, actions: [albBtn, del, picker] });
   }));
 }
 function fillAnchor() {
@@ -999,6 +1069,7 @@ const INSP_PROMPT = ({ note, cat }) => `A imagem é uma foto de inspiração: um
 3. Monte até 2 versões do look usando SOMENTE peças do meu guarda-roupa, com os ids exatos. Uma versão o mais fiel possível, e outra com uma releitura, se fizer sentido.
 4. Liste o que falta para chegar mais perto do look (no máximo 3 itens), pensando em peças versáteis.
 ${note ? "Ajuste pedido: " + note : ""}
+${profileText()}
 
 ${CATALOG_HEAD}
 ${cat}
@@ -1094,6 +1165,7 @@ Viagem: ${t.destino || "destino não informado"}${t.inicio ? ", de " + fmtDate(t
 Tipo: ${t.tipo}. Estação: ${t.estacao}. Bagagem: ${t.bagagem}.
 Programação: ${t.programacao || "passeios variados"}.
 ${t.obs ? "Observações: " + t.obs : ""}
+${profileText()}
 ${(t.pecas || []).length ? "Peças que já escolhi (mantenha todas e complete): " + t.pecas.join(", ") : ""}
 ${(t.checklist || []).length ? "Itens que já estão no checklist: " + t.checklist.map(c => c.text).join(", ") : ""}
 
@@ -1245,12 +1317,116 @@ async function manualLook() {
   if (!S.db) { toast("Abra esta página no claude.ai para salvar looks."); return; }
   const r = await pickPieces({ title: "Montar meu look", nameField: true, selected: [] });
   if (!r || !r.ids.length) return;
-  try { await S.db.collection("looks").add({ titulo: r.name || "Meu look", pecas: r.ids, origem: "manual", createdAt: Date.now() }); S.savedFilter = "todos"; toast("Look salvo"); }
+  try { await S.db.collection("looks").add({ titulo: r.name || "Meu look", pecas: r.ids, origem: "manual", albums: curLookAlbum() ? [curLookAlbum()] : [], createdAt: Date.now() }); toast("Look salvo"); }
   catch (e) { toast(errText(e)); }
 }
 
+// ---------- DOSSIÊ ----------
+const BIOTIPOS = {
+  "Ampulheta": { resumo: "Ombros e quadris alinhados, com a cintura bem marcada.",
+    valoriza: ["Marcar a cintura: cintos, faixas, modelagem envelope e peplum", "Tecidos com caimento que acompanham as curvas: malha, crepe, seda", "Decotes em V, coração e transpassados", "Saias lápis, evasê e midi; calças de cintura alta", "Blazers acinturados e casacos com cinto"],
+    evita: ["Peças retas e largas que escondem a cintura", "Volume excessivo em cima ou embaixo", "Tecidos muito rígidos ou armados", "Cintura baixa e peças oversized sem ajuste"] },
+  "Triângulo": { resumo: "Quadris mais largos que os ombros.", valoriza: ["Volume e detalhes na parte de cima", "Decotes canoa e ombros marcados", "Partes de baixo escuras e lisas", "Saias evasê e calças retas"], evita: ["Bolsos e volume nos quadris", "Saias justas com estampas chamativas"] },
+  "Triângulo invertido": { resumo: "Ombros mais largos que os quadris.", valoriza: ["Volume e cor na parte de baixo", "Decotes em V e profundos", "Saias rodadas, pantalonas e calças com detalhes"], evita: ["Ombreiras e mangas bufantes", "Decotes canoa e golas largas"] },
+  "Retângulo": { resumo: "Ombros, cintura e quadris com medidas próximas.", valoriza: ["Criar cintura com cintos e recortes", "Peplum, babados e camadas", "Saias rodadas e evasê"], evita: ["Peças retas da cabeça aos pés sem marcação"] },
+  "Oval": { resumo: "Volume concentrado na região do tronco.", valoriza: ["Linhas verticais e decotes em V", "Tecidos fluidos", "Terceiras peças abertas e compridas", "Destaque para pernas e colo"], evita: ["Cintos largos na cintura", "Tecidos colados e brilhantes no tronco"] },
+};
+const ESTILOS = {
+  "Clássico": { resumo: "Atemporal, sóbrio e organizado. Prefere peças de qualidade que duram anos e combinações harmoniosas, sem exageros.",
+    pecas: ["Camisa branca", "Blazer de alfaiataria", "Calça reta ou de pregas", "Trench coat", "Scarpin e mocassim", "Pérolas e joias discretas"],
+    dicas: ["Invista em tecidos nobres e bom corte", "Cores neutras como base, com uma cor de destaque", "Estampas tradicionais: listras, poá, xadrez discreto"] },
+  "Elegante": { resumo: "Refinado e sofisticado. Valoriza o acabamento, o caimento e a sensação de \"menos é mais\", com acessórios marcantes mas discretos.",
+    pecas: ["Vestido tubinho", "Pantalona", "Camisa de seda", "Sobretudo", "Bolsa estruturada", "Scarpin de bico fino"],
+    dicas: ["Looks monocromáticos ou tom sobre tom", "Poucos acessórios, de impacto", "Tecidos com caimento: seda, crepe, lã fria"] },
+  "Romântico": { resumo: "Delicado e feminino, com babados, rendas, florais e tons suaves.", pecas: ["Vestido floral", "Blusa com laço", "Saia midi fluida", "Sapatilha"], dicas: ["Tecidos leves e fluidos", "Detalhes delicados"] },
+  "Sexy": { resumo: "Sensual e confiante, valoriza as curvas.", pecas: ["Vestido justo", "Saia lápis", "Salto alto", "Decotes"], dicas: ["Escolha um ponto de destaque por look"] },
+  "Criativo": { resumo: "Autoral e original, mistura estampas, cores e referências.", pecas: ["Peças de brechó", "Estampas misturadas", "Acessórios artesanais"], dicas: ["Brinque com proporções e camadas"] },
+  "Dramático": { resumo: "Impactante e moderno, com linhas marcantes e alto contraste.", pecas: ["Peças estruturadas", "Ombros marcados", "Acessórios grandes"], dicas: ["Formas geométricas e contraste forte"] },
+  "Natural": { resumo: "Confortável e prático, sem esforço aparente.", pecas: ["Jeans", "Camiseta", "Tênis", "Tricô"], dicas: ["Tecidos naturais e peças versáteis"] },
+};
+const CARTELAS = {
+  "Inverno Brilhante": {
+    resumo: "Alto contraste e cores frias, puras e intensas. As cores vibrantes iluminam o rosto; tons apagados e quentes deixam a pele sem vida.",
+    melhores: [["Preto", "#0b0a10"], ["Branco puro", "#ffffff"], ["Fúcsia", "#d1127a"], ["Pink", "#ff3d9e"], ["Azul royal", "#1f35b8"], ["Azul cobalto", "#0047ab"], ["Esmeralda", "#007a52"], ["Verde bandeira", "#009b4d"], ["Vermelho puro", "#c8102e"], ["Roxo", "#5b17a8"], ["Turquesa", "#00a3ad"], ["Amarelo limão", "#f2e600"], ["Cinza grafite", "#3a3a44"], ["Azul marinho", "#0f1a4a"], ["Rosa gelo", "#f6d6e8"], ["Azul gelo", "#d6e8f6"]],
+    evitar: [["Bege", "#d8c3a5"], ["Caramelo", "#b26d2e"], ["Mostarda", "#c9a227"], ["Laranja queimado", "#c4571e"], ["Marrom", "#6b4226"], ["Verde musgo", "#6b7036"], ["Salmão", "#f0a07a"], ["Rosa antigo", "#c99a9a"]],
+    dicas: ["Prefira combinações de alto contraste: preto com branco, preto com fúcsia, marinho com branco", "Metais prateados: prata, ouro branco, ródio", "Batom em fúcsia, pink frio ou vermelho puro", "Use os neutros frios (preto, branco, grafite, marinho) no lugar do bege e do marrom"]
+  },
+  "Inverno Profundo": { resumo: "Cores frias e escuras, com contraste forte.", melhores: [["Preto", "#000"], ["Vinho", "#5c0a2e"], ["Esmeralda", "#00563f"], ["Marinho", "#0f1a4a"], ["Branco", "#fff"], ["Rubi", "#9b111e"]], evitar: [["Pastéis quentes", "#f3c9a0"], ["Bege", "#d8c3a5"]], dicas: ["Prata e tons escuros intensos"] },
+  "Inverno Frio": { resumo: "Cores frias e puras, sem nada amarelado.", melhores: [["Preto", "#000"], ["Branco", "#fff"], ["Azul royal", "#1f35b8"], ["Magenta", "#b0126a"], ["Pinho", "#01796f"], ["Gelo", "#e8f0f8"]], evitar: [["Laranja", "#e07020"], ["Marrom", "#6b4226"]], dicas: ["Prata e cores puras"] },
+  "Verão Claro": { resumo: "Cores frias, claras e suaves.", melhores: [["Azul bebê", "#a9c8e8"], ["Rosa claro", "#f2c4d6"], ["Lavanda", "#c6b5e0"], ["Menta", "#bde3d0"]], evitar: [["Preto", "#000"], ["Laranja", "#e07020"]], dicas: ["Baixo contraste e tons leves"] },
+  "Verão Frio": { resumo: "Cores frias, médias e suaves.", melhores: [["Azul acinzentado", "#6f8fb0"], ["Framboesa", "#b03a6a"], ["Lavanda", "#a99bd0"], ["Cinza", "#8a8f99"]], evitar: [["Laranja", "#e07020"], ["Mostarda", "#c9a227"]], dicas: ["Prata e tons frios médios"] },
+  "Verão Suave": { resumo: "Cores frias acinzentadas e esfumadas.", melhores: [["Rosa antigo", "#c99a9a"], ["Azul jeans", "#5d7fa3"], ["Verde sálvia", "#9aae96"], ["Cinza", "#9a9aa0"]], evitar: [["Preto", "#000"], ["Cores neon", "#39ff14"]], dicas: ["Tom sobre tom"] },
+  "Primavera Brilhante": { resumo: "Cores quentes, claras e vibrantes.", melhores: [["Coral", "#ff6f61"], ["Turquesa", "#30d5c8"], ["Amarelo", "#ffd23f"], ["Verde maçã", "#7ac943"]], evitar: [["Preto", "#000"], ["Cinza", "#808080"]], dicas: ["Dourado e contraste médio"] },
+  "Primavera Clara": { resumo: "Cores quentes, claras e delicadas.", melhores: [["Pêssego", "#ffcba4"], ["Aqua", "#9fe2d8"], ["Amarelo claro", "#fff1a8"], ["Rosa salmão", "#f7a8a0"]], evitar: [["Preto", "#000"], ["Vinho", "#5c0a2e"]], dicas: ["Dourado claro"] },
+  "Primavera Quente": { resumo: "Cores quentes, médias e alegres.", melhores: [["Laranja", "#f28c28"], ["Verde oliva claro", "#a3b13a"], ["Caramelo", "#c68642"], ["Coral", "#ff7f50"]], evitar: [["Preto", "#000"], ["Rosa frio", "#e0a0c8"]], dicas: ["Dourado"] },
+  "Outono Profundo": { resumo: "Cores quentes, escuras e ricas.", melhores: [["Marrom café", "#4b2e1e"], ["Verde musgo", "#4a5d23"], ["Vinho", "#6d1a36"], ["Petróleo", "#1d4e5a"]], evitar: [["Pastéis frios", "#cde"], ["Pink", "#ff3d9e"]], dicas: ["Dourado envelhecido e cobre"] },
+  "Outono Quente": { resumo: "Cores quentes, terrosas e intensas.", melhores: [["Ferrugem", "#b7410e"], ["Mostarda", "#c9a227"], ["Oliva", "#708238"], ["Camelo", "#c19a6b"]], evitar: [["Preto", "#000"], ["Fúcsia", "#d1127a"]], dicas: ["Dourado e cobre"] },
+  "Outono Suave": { resumo: "Cores quentes, suaves e acinzentadas.", melhores: [["Bege", "#d8c3a5"], ["Verde sálvia", "#9aae96"], ["Terracota claro", "#d08c60"], ["Caqui", "#bfae8a"]], evitar: [["Preto", "#000"], ["Cores neon", "#39ff14"]], dicas: ["Dourado fosco e baixo contraste"] },
+};
+const ESTILO_LIST = Object.keys(ESTILOS);
+function profileText() {
+  const p = S.profile; if (!p) return "";
+  const c = CARTELAS[p.cartela];
+  return [
+    "Meu dossiê de imagem (use para escolher e explicar):",
+    p.biotipo ? `- Biotipo: ${p.biotipo}. ${(BIOTIPOS[p.biotipo]?.valoriza || []).slice(0, 3).join("; ")}.` : "",
+    (p.estilos || []).length ? `- Estilos: ${p.estilos.join(" e ")}.` : "",
+    p.cartela ? `- Cartela de cores: ${p.cartela}. Favorecem: ${(c?.melhores || []).map(x => x[0].toLowerCase()).join(", ")}. Evitar perto do rosto: ${(c?.evitar || []).map(x => x[0].toLowerCase()).join(", ")}.` : "",
+    "Priorize combinações que respeitem o biotipo, o estilo e a cartela; se usar uma cor fora da cartela, deixe-a longe do rosto.",
+  ].filter(Boolean).join("\n");
+}
+const swatch = ([name, hex]) => h("span", { class: "sw", title: name }, h("i", { style: "background:" + hex }), h("span", {}, name));
+function dossieCard(kind, title, cls, key, body) {
+  const open = S.dossieOpen === key;
+  return h("article", { class: "dos " + cls + (open ? " open" : "") },
+    h("button", { class: "dos-head", "aria-expanded": String(open), onclick: () => { S.dossieOpen = open ? null : key; renderDossie(); } },
+      h("span", { class: "dos-eye", "aria-hidden": "true" }, open ? "−" : "+"),
+      h("span", { class: "dos-title" }, h("span", { class: "dos-kind" }, kind), h("span", { class: "dos-name" }, title))),
+    open ? h("div", { class: "dos-body" }, body) : null);
+}
+const ul = (items) => h("ul", { class: "dos-list" }, items.map(x => h("li", {}, x)));
+function renderDossie() {
+  const out = $("#dossie-out"); if (!out) return;
+  const p = S.profile || {};
+  if (S.dossieEdit) {
+    const est = new Set(p.estilos || []);
+    const selBio = h("select", { id: "d-bio" }, h("option", { value: "" }, "Não sei ainda"), Object.keys(BIOTIPOS).map(k => h("option", { selected: p.biotipo === k }, k)));
+    const selCar = h("select", { id: "d-car" }, h("option", { value: "" }, "Não sei ainda"), Object.keys(CARTELAS).map(k => h("option", { selected: p.cartela === k }, k)));
+    const chips = h("div", { class: "chips" });
+    const drawChips = () => fill(chips, ESTILO_LIST.map(k => h("button", { type: "button", class: "chip", "aria-pressed": String(est.has(k)), onclick: () => { est.has(k) ? est.delete(k) : est.add(k); drawChips(); } }, k)));
+    drawChips();
+    fill(out, h("form", { class: "panel", onsubmit: async (e) => {
+      e.preventDefault(); if (!S.db) return;
+      try { await S.db.doc("profile/me").set({ biotipo: selBio.value, cartela: selCar.value, estilos: [...est], updatedAt: Date.now() }); S.dossieEdit = false; toast("Dossiê salvo"); renderDossie(); }
+      catch (err) { toast(errText(err)); }
+    } },
+      h("h3", {}, "Editar dossiê"),
+      h("div", { class: "row" }, h("label", { class: "field" }, "Biotipo", selBio), h("label", { class: "field" }, "Cartela de cores", selCar)),
+      h("div", { class: "field" }, "Estilos ", h("small", {}, "pode escolher mais de um"), chips),
+      h("div", { class: "toolbar" }, h("button", { class: "btn primary", type: "submit" }, "Salvar"), h("button", { class: "btn ghost", type: "button", onclick: () => { S.dossieEdit = false; renderDossie(); } }, "Cancelar"))));
+    return;
+  }
+  if (!S.loaded.profile) { thinking(out, "Carregando seu dossiê…"); return; }
+  const cards = [];
+  const b = BIOTIPOS[p.biotipo];
+  if (b) cards.push(dossieCard("Dossiê biotipo", p.biotipo, "d-bio", "bio", [
+    h("p", {}, b.resumo), h("h4", {}, "Valoriza"), ul(b.valoriza), h("h4", {}, "Evitar"), ul(b.evita)]));
+  (p.estilos || []).forEach((k, i) => { const e = ESTILOS[k]; if (e) cards.push(dossieCard("Dossiê estilo", k, i % 2 ? "d-est2" : "d-est", "est-" + k, [
+    h("p", {}, e.resumo), h("h4", {}, "Peças-chave"), ul(e.pecas), h("h4", {}, "Dicas"), ul(e.dicas)])); });
+  const c = CARTELAS[p.cartela];
+  if (c) cards.push(dossieCard("Cartela de cores", p.cartela, "d-car", "car", [
+    h("p", {}, c.resumo), h("h4", {}, "Suas melhores cores"), h("div", { class: "sws" }, c.melhores.map(swatch)),
+    h("h4", {}, "Evitar perto do rosto"), h("div", { class: "sws dim" }, c.evitar.map(swatch)), h("h4", {}, "Dicas"), ul(c.dicas)]));
+  fill(out,
+    h("div", { class: "alb-head", style: "flex-wrap:wrap;align-items:flex-end" },
+      h("div", { class: "head" }, h("h2", {}, "Meu dossiê"), h("p", { class: "lede" }, "Seu biotipo, estilo e cartela de cores. O Claude usa estas informações para montar looks, malas e para avaliar peças na loja.")),
+      h("button", { class: "btn", onclick: () => { S.dossieEdit = true; renderDossie(); } }, "Editar dossiê")),
+    c ? h("div", { class: "strip", "aria-label": "Cartela " + p.cartela }, c.melhores.map(([n, hex]) => h("i", { title: n, style: "background:" + hex }))) : null,
+    cards.length ? h("div", { class: "dos-list-wrap" }, cards) : h("div", { class: "empty" }, h("h3", {}, "Seu dossiê está vazio"), h("p", { class: "lede" }, "Toque em Editar dossiê e preencha biotipo, estilos e cartela.")));
+}
+
 // ---------- wiring ----------
-function renderAll() { renderCloset(); fillAnchor(); renderSaved(); renderTrips(); }
+function renderAll() { renderCloset(); fillAnchor(); renderSaved(); renderTrips(); renderDossie(); }
 function setup() {
   fill($("#pf-cat"), ...CATS.map(([k, l]) => h("option", { value: k }, l)));
   $("#pf-form").addEventListener("input", (e) => { $("#pf-form-lbl").textContent = FORM_LABEL[clampForm(e.target.value)]; });
@@ -1282,7 +1458,7 @@ function subscribe(name, key, sortDesc) {
   const timer = setTimeout(() => { if (!S.loaded[key]) { const b = $("#env-banner"); b.hidden = false; fill(b, h("strong", {}, "Ainda carregando. "), "Seus dados estão demorando para chegar; confira a conexão."); } }, 10000);
   S.db.collection(name).onSnapshot((snap) => {
     S[key] = snap.docs.map(d => Object.assign({ id: d.id }, d.data())).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-    if (key === "albums") S.albums.reverse();
+    if (key === "albums" || key === "lookAlbums") S[key].reverse();
     if (key === "pieces") S.byId = Object.fromEntries(S.pieces.map(p => [p.id, p]));
     if (!snap.metadata.fromCache) { S.loaded[key] = true; clearTimeout(timer); if (Object.values(S.loaded).every(Boolean)) $("#env-banner").hidden = true; }
     else if (snap.size) S.loaded[key] = true;
@@ -1303,10 +1479,11 @@ async function boot() {
   if (!db) {
     const b = $("#env-banner"); b.hidden = false;
     fill(b, h("strong", {}, "Modo de visualização. "), "Abra esta página no claude.ai, com a sua conta, para guardar peças e usar o assistente.");
-    S.loaded = { pieces: true, looks: true, trips: true, albums: true };
+    S.loaded = { pieces: true, looks: true, trips: true, albums: true, lookAlbums: true, profile: true };
     renderAll(); return;
   }
-  subscribe("pieces", "pieces"); subscribe("looks", "looks"); subscribe("trips", "trips"); subscribe("albums", "albums");
+  subscribe("pieces", "pieces"); subscribe("looks", "looks"); subscribe("trips", "trips"); subscribe("albums", "albums"); subscribe("lookAlbums", "lookAlbums");
+  S.db.doc("profile/me").onSnapshot((snap) => { S.profile = snap.exists ? snap.data() : null; S.loaded.profile = true; renderDossie(); }, () => { S.loaded.profile = true; renderDossie(); });
 }
 boot();
 })();
