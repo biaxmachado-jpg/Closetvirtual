@@ -120,6 +120,34 @@ label.field small { font-weight: 400; color: var(--muted); }
 .empty ol { margin: 0; padding-left: 20px; display: grid; gap: 6px; color: var(--muted); }
 .empty ol strong { color: var(--ink); }
 
+/* album list */
+.alb-list { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; }
+.alb-row { display: grid; grid-template-columns: minmax(0, 1fr) auto 52px; align-items: center; border-bottom: 1px solid var(--line); }
+.alb-row:last-child { border-bottom: 0; }
+.alb-open { text-align: left; background: none; border: 0; padding: 13px 16px; cursor: pointer; display: grid; gap: 1px; min-width: 0; }
+.alb-open:hover .alb-name { color: var(--accent); }
+.alb-name { font-family: var(--f-display); font-weight: 700; font-size: 1.05rem; }
+.alb-hint { color: var(--muted); font-size: .82rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.alb-count { padding: 0 6px; }
+.alb-add { position: relative; display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; margin: 0 auto; cursor: pointer; border: 1px solid var(--line); overflow: hidden; }
+.alb-add::before { content: "+"; font-size: 1.3rem; line-height: 1; color: var(--ink); }
+.alb-add:hover { border-color: var(--accent); background: var(--accent-soft); }
+.alb-add input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.alb-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.alb-new { display: flex; gap: 8px; flex-wrap: wrap; } .alb-new input { flex: 1 1 200px; }
+
+/* picker */
+dialog.pick-dlg { width: min(760px, calc(100vw - 24px)); }
+.pick-wrap { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; max-height: calc(100dvh - 24px); }
+.pick-top { padding: 16px 16px 10px; display: grid; gap: 10px; border-bottom: 1px solid var(--line); }
+.pick-grid { overflow-y: auto; padding: 12px 16px; display: grid; gap: 8px; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); align-content: start; }
+.pick { border: 2px solid transparent; background: var(--sunk); border-radius: 8px; padding: 0; cursor: pointer; display: grid; overflow: hidden; text-align: left; }
+.pick img { width: 100%; aspect-ratio: 1; object-fit: contain; }
+.pick span { font-size: .72rem; padding: 4px 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; background: var(--surface); }
+.pick[aria-pressed="true"] { border-color: var(--accent); }
+.pick[aria-pressed="true"] span { background: var(--accent); color: var(--accent-ink); }
+.pick-foot { padding: 12px 16px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+
 /* upload queue */
 .queue { display: grid; gap: 6px; }
 .qrow { display: flex; gap: 10px; align-items: center; font-size: .88rem; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; }
@@ -171,6 +199,24 @@ table.match img { width: 44px; height: 44px; object-fit: contain; background: va
 .trip-card:hover { border-color: var(--muted); }
 .cols2 { display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); align-items: start; }
 
+.check .x { border: 0; background: none; color: var(--muted); font-size: 1.2rem; line-height: 1; padding: 4px 6px; cursor: pointer; border-radius: 6px; }
+.check .x:hover { color: var(--err); background: var(--sunk); }
+.trips { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+.c0 { --tc: #8e3b3b; } .c1 { --tc: #b94f62; } .c2 { --tc: #a8673f; } .c3 { --tc: #2f7563; } .c4 { --tc: #33648a; } .c5 { --tc: #5f4f94; }
+.trip, .trip-hero { background: var(--tc); color: #fff; border: 0; border-radius: 14px; text-align: left; position: relative; }
+.trip { cursor: pointer; padding: 16px 16px 12px; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px 14px; }
+.trip:hover { filter: brightness(1.07); }
+.trip .mono, .trip-hero .mono { color: rgba(255,255,255,.82); }
+.trip-main { display: grid; gap: 4px; min-width: 0; }
+.trip-dest { font-family: var(--f-display); font-weight: 700; font-size: 1.3rem; line-height: 1.15; overflow-wrap: anywhere; }
+.trip-side { display: grid; gap: 4px; justify-items: end; align-content: start; padding-left: 14px; border-left: 1px dashed rgba(255,255,255,.45); }
+.trip-bar { grid-column: 1 / -1; display: flex; gap: 10px; align-items: center; background: rgba(0,0,0,.28); margin: 2px -16px -12px; padding: 9px 16px; border-radius: 0 0 14px 14px; }
+.trip-bar .meter { flex: 1; background: rgba(255,255,255,.25); } .trip-bar .meter i { background: #fff; }
+.trip-hero { padding: 20px; display: flex; gap: 16px; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; }
+.trip-hero .trip-dest { font-size: 1.8rem; }
+.trip-map { color: #fff; font-size: .88rem; font-weight: 600; margin-top: 4px; }
+.trip-stat { display: grid; justify-items: end; } .trip-stat .big { font-family: var(--f-display); font-size: 2.4rem; font-weight: 700; line-height: 1; }
+
 /* dialog */
 dialog { border: 0; border-radius: 14px; padding: 0; width: min(560px, calc(100vw - 24px)); max-height: calc(100dvh - 24px); background: var(--surface); color: var(--ink); box-shadow: 0 20px 60px rgba(0,0,0,.3); }
 dialog::backdrop { background: rgba(10, 12, 20, .5); }
@@ -217,7 +263,6 @@ footer { color: var(--muted); font-size: .82rem; padding-block: 0 32px; }
     </div>
     <div id="queue" class="queue" hidden></div>
     <div id="shop-out" hidden></div>
-    <div class="chips" id="cat-chips"></div>
     <div id="closet"></div>
   </section>
 
@@ -244,7 +289,7 @@ footer { color: var(--muted); font-size: .82rem; padding-block: 0 32px; }
       <div id="look-status"></div>
     </div>
     <div id="look-out" class="looks"></div>
-    <div class="head"><h2>Looks salvos</h2></div>
+    <div class="alb-head" style="flex-wrap:wrap"><h2>Looks salvos</h2><button class="btn" id="manual-look">+ Montar meu look</button></div>
     <div class="chips" id="saved-filter"></div>
     <div id="saved-looks" class="looks"></div>
   </section>
@@ -282,34 +327,34 @@ footer { color: var(--muted); font-size: .82rem; padding-block: 0 32px; }
 
   <!-- MALA -->
   <section class="view" id="v-mala" data-view="mala" hidden>
-    <div class="head">
-      <h2>Montar mala</h2>
-      <p class="lede">Conte da viagem. O Claude escolhe poucas peças que rendem muitos looks e monta um checklist pra você ir marcando.</p>
-    </div>
     <div id="trip-detail" hidden></div>
-    <div id="trip-form-wrap" class="cols2">
-      <div class="panel">
+    <div id="trip-home" style="display:grid;gap:20px">
+      <div class="alb-head" style="align-items:flex-end;flex-wrap:wrap">
+        <div class="head"><h2>Minhas malas</h2><p class="lede">Escolha as peças de cada viagem, monte os looks e vá marcando o checklist. O Claude pode montar tudo pra você.</p></div>
+        <button class="btn primary" id="trip-new">+ Nova mala</button>
+      </div>
+      <div class="panel" id="trip-form" hidden>
+        <h3>Nova viagem</h3>
         <div class="row">
-          <label class="field">Destino<input type="text" id="t-dest" placeholder="Ex.: Lisboa"></label>
-          <label class="field">Dias<input type="number" id="t-days" min="1" max="60" value="5"></label>
+          <label class="field">Destino<input type="text" id="t-dest" placeholder="Ex.: Lisboa, Portugal"></label>
+          <label class="field">Ida<input type="date" id="t-start"></label>
+          <label class="field">Volta<input type="date" id="t-end"></label>
         </div>
         <div class="row">
-          <label class="field">Clima
-            <select id="t-clima"><option>Calor</option><option selected>Ameno</option><option>Frio</option><option>Muda muito</option></select>
-          </label>
-          <label class="field">Bagagem
-            <select id="t-bag"><option>Só mala de mão</option><option selected>Mala média</option><option>Mala grande</option></select>
-          </label>
+          <label class="field">Tipo de viagem<select id="t-type"></select></label>
+          <label class="field">Estação<select id="t-season"></select></label>
+          <label class="field">Bagagem<select id="t-bag"><option>Só mala de mão</option><option selected>Mala média</option><option>Mala grande</option></select></label>
         </div>
         <label class="field">Programação<input type="text" id="t-occ" placeholder="Ex.: passeios a pé, 1 jantar especial, 1 dia de praia"></label>
         <label class="field">Observações <small>(opcional)</small><input type="text" id="t-notes" placeholder="Ex.: quero levar o vestido verde, nada de salto"></label>
-        <div class="toolbar"><button class="btn primary" id="trip-go">Montar mala</button><button class="btn ghost" id="trip-stop" hidden>Parar</button></div>
+        <div class="toolbar">
+          <button class="btn primary" id="trip-create-ai">Criar e montar com o Claude</button>
+          <button class="btn" id="trip-create">Criar mala vazia</button>
+          <button class="btn ghost" id="trip-cancel">Cancelar</button>
+        </div>
         <div id="trip-status"></div>
       </div>
-      <div style="display:grid;gap:12px;min-width:0">
-        <h3>Malas salvas</h3>
-        <div id="trip-list" style="display:grid;gap:10px"></div>
-      </div>
+      <div id="trip-list" class="trips"></div>
     </div>
   </section>
 </main>
@@ -321,6 +366,9 @@ footer { color: var(--muted); font-size: .82rem; padding-block: 0 32px; }
     <label class="field">Nome<input type="text" id="pf-name" required></label>
     <div class="row">
       <label class="field">Categoria<select id="pf-cat"></select></label>
+      <label class="field">Tipo<input type="text" id="pf-type" placeholder="camiseta, saia, blazer…"></label>
+    </div>
+    <div class="row">
       <label class="field">Formalidade <small id="pf-form-lbl"></small><input type="range" id="pf-form" min="1" max="5" step="1"></label>
     </div>
     <div class="row">
@@ -339,6 +387,7 @@ footer { color: var(--muted); font-size: .82rem; padding-block: 0 32px; }
         <label><input type="checkbox" id="pf-s-inverno" value="inverno"> Inverno</label>
       </div>
     </div>
+    <div class="field" id="pf-albums-wrap">Álbuns<div class="chips" id="pf-albums"></div></div>
     <label class="field">Notas<input type="text" id="pf-notes" placeholder="Ex.: ficou curta, precisa de ajuste"></label>
     <label class="seasons" style="font-size:.9rem"><span style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="pf-avail"> Disponível para looks</span><span style="display:flex;gap:6px;align-items:center" id="pf-orig-wrap"><input type="checkbox" id="pf-orig"> Mostrar foto original</span></label>
     <div class="dlg-acts">
@@ -348,6 +397,8 @@ footer { color: var(--muted); font-size: .82rem; padding-block: 0 32px; }
   </form>
 </dialog>
 
+<dialog id="pick-dlg" class="pick-dlg"></dialog>
+
 <div class="toast" id="toast" hidden></div>
 
 <script>
@@ -356,21 +407,29 @@ footer { color: var(--muted); font-size: .82rem; padding-block: 0 32px; }
 
 // ---------- constants ----------
 const CATS = [
-  ["top", "Blusas e camisas"], ["malha", "Malhas e tricôs"], ["casaco", "Casacos e blazers"],
-  ["calca", "Calças"], ["saia", "Saias"], ["short", "Shorts e bermudas"], ["vestido", "Vestidos e macacões"],
-  ["sapato", "Sapatos"], ["bolsa", "Bolsas"], ["acessorio", "Acessórios"], ["praia", "Praia e academia"], ["outro", "Outros"]
+  ["cima", "Parte de cima"], ["baixo", "Parte de baixo"], ["terceira", "Terceira peça"], ["unica", "Peça única"],
+  ["calcado", "Calçado"], ["acessorio", "Acessório"], ["praia", "Praia"], ["fitness", "Fitness"], ["outro", "Outros"]
 ];
+const CAT_HINT = {
+  cima: "camisetas, blusas, camisas, tricôs", baixo: "calças, saias, shorts, bermudas",
+  terceira: "blazers, casacos, jaquetas, cardigãs, coletes", unica: "vestidos, macacões, macaquinhos",
+  calcado: "tênis, sandálias, botas, saltos", acessorio: "bolsas, cintos, bijuterias, lenços, óculos",
+  praia: "biquínis, maiôs, saídas de praia", fitness: "leggings, tops, roupas de treino", outro: "o que não se encaixa acima"
+};
 const CAT_LABEL = Object.fromEntries(CATS);
-const CAT_SHORT = { top: "blusa", malha: "malha", casaco: "casaco", calca: "calça", saia: "saia", short: "short", vestido: "vestido", sapato: "sapato", bolsa: "bolsa", acessorio: "acessório", praia: "praia", outro: "outro" };
+const CAT_SHORT = { cima: "cima", baixo: "baixo", terceira: "3ª peça", unica: "peça única", calcado: "calçado", acessorio: "acessório", praia: "praia", fitness: "fitness", outro: "outro" };
+const TRIP_TYPES = ["Cidade", "Praia", "Campo", "Neve", "Trabalho", "Cruzeiro"];
+const TRIP_SEASONS = ["Verão", "Outono", "Inverno", "Primavera"];
+const CHECK_PRESETS = ["Documentos", "Passaporte", "Carregador", "Adaptador de tomada", "Remédios", "Necessaire", "Roupa íntima", "Pijama", "Óculos de sol", "Guarda-chuva"];
 const FORM_LABEL = ["", "Casa", "Casual", "Smart casual", "Social", "Festa"];
 const SEASON_SHORT = { "verão": "VER", "meia-estação": "MEIA", "inverno": "INV" };
 const PRESETS = ["Trabalho, dia normal", "Reunião importante", "Jantar a dois", "Fim de semana casual", "Casamento de dia", "Dia frio e chuvoso", "Festa à noite", "Viagem de avião"];
 
 const S = {
   db: null, assets: null, sample: null, imagesOK: false,
-  pieces: [], looks: [], trips: [], byId: {},
-  loaded: { pieces: false, looks: false, trips: false },
-  filter: { q: "", cat: "todas" }, savedFilter: "todos",
+  pieces: [], looks: [], trips: [], albums: [], byId: {},
+  loaded: { pieces: false, looks: false, trips: false, albums: false },
+  filter: { q: "", view: "home", key: null }, savedFilter: "todos", newAlbum: false, newTrip: false,
   editing: null, openTrip: null,
   insp: { file: null, blob: null, result: null },
 };
@@ -392,6 +451,7 @@ function h(tag, props, ...kids) {
   }
   return el;
 }
+const fill = (el, ...kids) => el.replaceChildren(...kids.flat(Infinity).filter(k => k != null && k !== false));
 const imgSrc = (id) => id ? "/_blob/" + id : "";
 const asList = (v) => Array.isArray(v) ? v.map(String).map(s => s.trim()).filter(Boolean) : (typeof v === "string" && v.trim() ? v.split(",").map(s => s.trim()).filter(Boolean) : []);
 const clampForm = (n) => Math.min(5, Math.max(1, Math.round(Number(n) || 3)));
@@ -419,8 +479,8 @@ function errText(e) {
   };
   return map[c] || (e && e.message) || "Algo deu errado. Tente de novo.";
 }
-function thinking(el, text) { el.replaceChildren(h("div", { class: "thinking" }, h("span", { class: "spin" }), text)); }
-function say(el, text, kind) { el.replaceChildren(h("p", { class: "msg " + (kind || "") }, text)); }
+function thinking(el, text) { fill(el, h("div", { class: "thinking" }, h("span", { class: "spin" }), text)); }
+function say(el, text, kind) { fill(el, h("p", { class: "msg " + (kind || "") }, text)); }
 
 function loadImage(file) {
   return new Promise((res, rej) => {
@@ -465,7 +525,7 @@ function normBox(b) {
 function catalogText(opts) {
   const list = S.pieces.filter(p => opts && opts.all ? true : p.available !== false);
   return list.map(p => [
-    p.id, CAT_SHORT[p.cat] || p.cat, p.name,
+    p.id, (CAT_SHORT[p.cat] || p.cat) + (p.type ? "/" + p.type : ""), p.name,
     (p.colors || []).join("/"), p.pattern && p.pattern !== "lisa" ? p.pattern : "", p.fabric,
     (p.seasons || []).join("/"), "formalidade " + (p.formality || 3), (p.style || []).join("/"), p.brand, p.notes
   ].filter(Boolean).join(" | ")).join("\n");
@@ -497,7 +557,7 @@ function route() {
 window.addEventListener("hashchange", route);
 
 // ---------- ARMÁRIO ----------
-function pieceCard(p) {
+function pieceCard(p, opts) {
   const seasons = (p.seasons || []).map(s => SEASON_SHORT[s] || s).join("/");
   const f = clampForm(p.formality);
   return h("button", { class: "piece" + (p.available === false ? " off" : ""), onclick: () => openPiece(p.id), "aria-label": "Editar " + (p.name || "peça") },
@@ -505,56 +565,120 @@ function pieceCard(p) {
     p.available === false ? h("span", { class: "flag mono" }, "fora de uso") : null,
     h("div", { class: "tag" },
       h("div", { class: "nm" }, p.name || "Sem nome"),
-      h("div", { class: "mono" }, [CAT_SHORT[p.cat] || "peça", seasons].filter(Boolean).join(" · "), " ",
+      h("div", { class: "mono" }, [p.type || CAT_SHORT[p.cat] || "peça", seasons].filter(Boolean).join(" · "), " ",
         h("span", { class: "dots", title: "Formalidade " + f + " de 5" }, [1, 2, 3, 4, 5].map(i => h("i", { class: i <= f ? "on" : "" }))))
     )
   );
 }
+const fold = (s) => String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
 function matchesQ(p, q) {
   if (!q) return true;
-  const hay = [p.name, CAT_LABEL[p.cat], CAT_SHORT[p.cat], ...(p.colors || []), p.pattern, p.fabric, p.brand, p.notes, ...(p.style || []), ...(p.seasons || [])].join(" ").toLowerCase()
-    .normalize("NFD").replace(/[̀-ͯ]/g, "");
+  const hay = fold([p.name, p.type, CAT_LABEL[p.cat], ...(p.colors || []), p.pattern, p.fabric, p.brand, p.notes, ...(p.style || []), ...(p.seasons || [])].join(" "));
   return q.split(/\s+/).every(w => hay.includes(w));
 }
+function addInput(label, opts, cls) {
+  const inp = h("input", { type: "file", accept: "image/*", multiple: true, "aria-label": label });
+  inp.addEventListener("change", (e) => { const f = [...e.target.files]; e.target.value = ""; addFiles(f, opts); });
+  return h("label", { class: cls || "btn small file-btn", title: label }, cls ? null : "+ Adicionar", inp);
+}
+function goView(view, key) { S.filter.view = view; S.filter.key = key || null; renderCloset(); window.scrollTo(0, 0); }
 function renderCloset() {
   const out = $("#closet");
   const n = S.pieces.length;
   $("#count-badge").textContent = S.loaded.pieces ? n + (n === 1 ? " peça" : " peças") : "—";
-  // chips
-  const counts = {}; S.pieces.forEach(p => { counts[p.cat] = (counts[p.cat] || 0) + 1; });
-  const chips = $("#cat-chips"); chips.replaceChildren();
-  if (n) {
-    const mk = (key, label, c) => h("button", { class: "chip", "aria-pressed": String(S.filter.cat === key), onclick: () => { S.filter.cat = key; renderCloset(); } }, label, h("b", {}, c));
-    chips.append(mk("todas", "Todas", n));
-    CATS.forEach(([k, l]) => { if (counts[k]) chips.append(mk(k, l, counts[k])); });
-  }
   if (!S.loaded.pieces) {
-    if (!S.db) { out.replaceChildren(emptyCloset()); return; }
+    if (!S.db) { fill(out, emptyCloset()); return; }
     thinking(out, "Carregando seu armário…"); return;
   }
-  if (!n) { out.replaceChildren(emptyCloset()); return; }
-  const q = S.filter.q.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").trim();
-  const list = S.pieces.filter(p => (S.filter.cat === "todas" || p.cat === S.filter.cat) && matchesQ(p, q));
-  if (!list.length) { say(out, "Nenhuma peça encontrada com esse filtro."); return; }
-  out.replaceChildren(h("div", { class: "grid" }, list.map(pieceCard)));
+  const q = fold(S.filter.q).trim();
+  if (q) {
+    const list = S.pieces.filter(p => matchesQ(p, q));
+    fill(out, 
+      h("p", { class: "mono" }, list.length + (list.length === 1 ? " resultado" : " resultados")),
+      list.length ? h("div", { class: "grid" }, list.map(pieceCard)) : h("p", { class: "lede" }, "Você não tem nenhuma peça com essa busca."));
+    return;
+  }
+  const { view, key } = S.filter;
+  if (view === "home") {
+    const counts = {}; S.pieces.forEach(p => { counts[p.cat] = (counts[p.cat] || 0) + 1; });
+    const row = (label, hint, count, onOpen, add) => h("div", { class: "alb-row" },
+      h("button", { class: "alb-open", onclick: onOpen },
+        h("span", { class: "alb-name" }, label), hint ? h("span", { class: "alb-hint" }, hint) : null),
+      h("span", { class: "alb-count mono" }, String(count)),
+      add || h("span"));
+    const albumForm = S.newAlbum ? h("form", { class: "alb-new", onsubmit: async (e) => {
+      e.preventDefault(); const name = e.target.querySelector("input").value.trim(); if (!name || !S.db) return;
+      try { await S.db.collection("albums").add({ name: name.slice(0, 40), createdAt: Date.now() }); S.newAlbum = false; renderCloset(); } catch (err) { toast(errText(err)); }
+    } }, h("input", { type: "text", id: "new-album", placeholder: "Nome do álbum: Trabalho, Favoritas, Para doar…", "aria-label": "Nome do álbum" }),
+      h("button", { class: "btn small primary", type: "submit" }, "Criar"),
+      h("button", { class: "btn small ghost", type: "button", onclick: () => { S.newAlbum = false; renderCloset(); } }, "Cancelar")) : null;
+    fill(out, 
+      n ? null : emptyCloset(),
+      h("div", { class: "alb-list" },
+        row("Todas as roupas", null, n, () => goView("all")),
+        CATS.filter(([k]) => k !== "outro" || counts[k]).map(([k, l]) =>
+          row(l, CAT_HINT[k], counts[k] || 0, () => goView("cat", k), addInput("Adicionar em " + l, { cat: k }, "alb-add")))
+      ),
+      h("div", { class: "alb-head" }, h("h3", {}, "Meus álbuns"),
+        S.newAlbum ? null : h("button", { class: "btn small", onclick: () => { S.newAlbum = true; renderCloset(); setTimeout(() => $("#new-album")?.focus(), 0); } }, "+ Novo álbum")),
+      albumForm,
+      S.albums.length ? h("div", { class: "alb-list" }, S.albums.map(a =>
+        row(a.name, null, S.pieces.filter(p => (p.albums || []).includes(a.id)).length, () => goView("album", a.id), addInput("Adicionar em " + a.name, { album: a.id }, "alb-add"))))
+        : (S.newAlbum ? null : h("p", { class: "lede" }, "Crie álbuns para agrupar peças do seu jeito, como Trabalho, Favoritas ou Para doar.")),
+      n ? h("div", { class: "alb-head" }, h("h3", {}, "Adicionadas por último")) : null,
+      n ? h("div", { class: "grid" }, S.pieces.slice(0, 6).map(pieceCard)) : null
+    );
+    return;
+  }
+  let title = "Todas as roupas", hint = null, list = S.pieces, addOpts = {}, extra = null;
+  if (view === "cat") { title = CAT_LABEL[key] || "Outros"; hint = CAT_HINT[key]; list = S.pieces.filter(p => p.cat === key); addOpts = { cat: key }; }
+  if (view === "album") {
+    const a = S.albums.find(x => x.id === key);
+    if (!a) { goView("home"); return; }
+    title = a.name; list = S.pieces.filter(p => (p.albums || []).includes(a.id)); addOpts = { album: a.id };
+    const del = h("button", { class: "btn small danger", onclick: async () => {
+      if (!del.dataset.armed) { del.dataset.armed = "1"; del.textContent = "Toque de novo (as peças continuam no armário)"; return; }
+      try {
+        for (const p of list) await S.db.collection("pieces").doc(p.id).update({ albums: (p.albums || []).filter(x => x !== a.id) });
+        await S.db.collection("albums").doc(a.id).delete(); goView("home");
+      } catch (e) { toast(errText(e)); }
+    } }, "Excluir álbum");
+    const pick = h("button", { class: "btn small", onclick: async () => {
+      const r = await pickPieces({ title: "Peças do álbum " + a.name, selected: list.map(p => p.id) }); if (!r) return;
+      try {
+        for (const p of S.pieces) {
+          const has = (p.albums || []).includes(a.id), want = r.ids.includes(p.id);
+          if (has !== want) await S.db.collection("pieces").doc(p.id).update({ albums: want ? [...(p.albums || []), a.id] : (p.albums || []).filter(x => x !== a.id) });
+        }
+      } catch (e) { toast(errText(e)); }
+    } }, "Escolher peças");
+    extra = [pick, del];
+  }
+  fill(out, 
+    h("div", { class: "toolbar" }, h("button", { class: "btn small ghost", onclick: () => goView("home") }, "← Álbuns"), view !== "all" ? addInput("Adicionar em " + title, addOpts) : null, extra),
+    h("div", { class: "head" }, h("h3", { style: "font-size:1.25rem" }, title, " ", h("span", { class: "mono" }, String(list.length))), hint ? h("p", { class: "lede" }, hint) : null),
+    list.length ? h("div", { class: "grid" }, list.map(pieceCard)) : h("p", { class: "lede" }, view === "album" ? "Nenhuma peça neste álbum ainda. Toque em Escolher peças." : "Nenhuma peça aqui ainda. Toque em + Adicionar.")
+  );
 }
 function emptyCloset() {
   return h("div", { class: "empty" },
     h("h3", {}, "Seu armário ainda está vazio"),
     h("ol", {},
       h("li", {}, h("strong", {}, "No Google Fotos"), ", abra o guarda-roupa (ou um álbum com suas peças), selecione as fotos e toque em ", h("strong", {}, "Baixar"), "."),
-      h("li", {}, "Aqui, toque em ", h("strong", {}, "Adicionar peças"), " e escolha várias fotos de uma vez."),
+      h("li", {}, "Aqui, toque em ", h("strong", {}, "Adicionar peças"), " ou no ", h("strong", {}, "+"), " de uma categoria e escolha várias fotos de uma vez."),
       h("li", {}, "O Claude identifica cada peça, inclusive quando a foto mostra um look inteiro, e cria a ficha. Toque numa peça para corrigir o que quiser.")
     ),
     h("p", { class: "lede" }, "Fotos com a peça inteira, bem iluminada e com fundo liso dão os melhores resultados.")
   );
 }
 
-const CLASSIFY_PROMPT = `Você está catalogando o guarda-roupa de uma pessoa. A imagem é uma foto de roupa: pode ser uma peça sozinha (em cabide, cama, chão, manequim) ou uma pessoa usando um look.
+const CLASSIFY_PROMPT = (opts) => `Você está catalogando o guarda-roupa de uma pessoa. A imagem é uma foto de roupa: pode ser uma peça sozinha (em cabide, cama, chão, manequim) ou uma pessoa usando um look.
 Identifique cada peça de roupa, calçado, bolsa ou acessório marcante que esteja bem visível. Ignore rostos, móveis e objetos que não são roupa. Se a foto mostra uma única peça, retorne só ela. Não invente peças que não aparecem.
+${opts && opts.cat ? `A pessoa está adicionando peças da categoria "${CAT_LABEL[opts.cat]}" (${CAT_HINT[opts.cat]}). Retorne só as peças dessa categoria.` : ""}
 Para cada peça, em português do Brasil:
 - nome: nome curto e específico que a pessoa reconheceria, ex.: "Camisa de linho branca", "Calça wide leg jeans escuro"
-- categoria: exatamente uma destas: top, malha, casaco, calca, saia, short, vestido, sapato, bolsa, acessorio, praia, outro
+- categoria: exatamente uma destas: cima (camisetas, blusas, camisas, tricôs), baixo (calças, saias, shorts), terceira (blazers, casacos, jaquetas, cardigãs, coletes), unica (vestidos, macacões), calcado, acessorio (bolsas, cintos, bijuterias, lenços, óculos), praia (biquínis, maiôs, saídas), fitness (roupa de treino), outro
+- tipo: o tipo da peça em uma ou duas palavras, ex.: "camiseta", "camisa", "calça", "saia", "blazer", "vestido", "tênis", "bolsa"
 - cores: 1 a 3 cores em português, a principal primeiro
 - estampa: "lisa" ou o nome da estampa (listrada, xadrez, floral, animal print…)
 - tecido: tecido aparente, ou "" se não der para saber
@@ -563,20 +687,21 @@ Para cada peça, em português do Brasil:
 - estilo: até 3 palavras, ex.: "básico", "romântico", "alfaiataria", "esportivo", "boho"
 - caixa: [x0, y0, x1, y1], o retângulo que contém a peça, em frações de 0 a 1 da largura e da altura da imagem, origem no canto superior esquerdo
 Responda só com JSON neste formato:
-{"pecas":[{"nome":"Calça wide leg jeans escuro","categoria":"calca","cores":["azul-escuro"],"estampa":"lisa","tecido":"jeans","estacoes":["meia-estação","inverno"],"formalidade":2,"estilo":["básico"],"caixa":[0.2,0.45,0.8,0.98]}]}`;
+{"pecas":[{"nome":"Calça wide leg jeans escuro","categoria":"baixo","tipo":"calça","cores":["azul-escuro"],"estampa":"lisa","tecido":"jeans","estacoes":["meia-estação","inverno"],"formalidade":2,"estilo":["básico"],"caixa":[0.2,0.45,0.8,0.98]}]}`;
 
-function pieceFromAI(p, photo, src) {
-  const cat = CAT_LABEL[p.categoria] ? p.categoria : "outro";
+function pieceFromAI(p, photo, src, opts) {
+  const cat = opts && opts.cat ? opts.cat : (CAT_LABEL[p.categoria] ? p.categoria : "outro");
   return {
-    name: String(p.nome || "Peça").slice(0, 80), cat,
+    name: String(p.nome || "Peça").slice(0, 80), cat, type: String(p.tipo || "").slice(0, 30),
     colors: asList(p.cores).slice(0, 3), pattern: String(p.estampa || "lisa"), fabric: String(p.tecido || ""),
     seasons: asList(p.estacoes).filter(s => SEASON_SHORT[s]), formality: clampForm(p.formalidade),
     style: asList(p.estilo).slice(0, 3), brand: "", notes: "", available: true,
+    albums: opts && opts.album ? [opts.album] : [],
     photo, src, createdAt: Date.now()
   };
 }
 
-async function addFiles(files) {
+async function addFiles(files, opts) {
   if (!files.length) return;
   if (!S.db || !S.assets) { toast(S.db ? errText({ code: "not_granted_assets" }) : "Abra esta página no claude.ai para salvar peças."); return; }
   if (!S.sample || !S.imagesOK) { toast("O Claude precisa ver as fotos. Abra a página no claude.ai."); return; }
@@ -585,21 +710,21 @@ async function addFiles(files) {
     const st = h("span", { class: "st" }, "Na fila");
     const row = h("div", { class: "qrow" }, h("span", { class: "fn" }, file.name || "foto"), st);
     q.prepend(row);
-    return { file, st };
+    return { file, st, opts: opts || {} };
   });
   let i = 0;
   const worker = async () => { while (i < jobs.length) await processFile(jobs[i++]); };
   await Promise.all([worker(), worker()]);
   setTimeout(() => { if (![...q.querySelectorAll(".st")].some(s => !s.classList.contains("ok") && !s.classList.contains("warn") && !s.classList.contains("err"))) { q.querySelectorAll(".qrow").forEach(r => { if (r.querySelector(".st.ok")) r.remove(); }); if (!q.children.length) q.hidden = true; } }, 6000);
 }
-async function processFile({ file, st }) {
+async function processFile({ file, st, opts }) {
   const set = (t, k) => { st.textContent = t; st.className = "st " + (k || ""); };
   try {
     set("Lendo foto…");
     const img = await loadImage(file);
     const full = await toJpeg(img, 1280, null, 0.82);
     set("Identificando peças…");
-    const res = await S.sample.json(CLASSIFY_PROMPT, { images: [full] });
+    const res = await S.sample.json(CLASSIFY_PROMPT(opts), { images: [full] });
     const found = (res && Array.isArray(res.pecas) ? res.pecas : []).filter(p => p && p.nome).slice(0, 8);
     if (!found.length) { set("Nenhuma peça encontrada", "warn"); return; }
     set("Salvando…");
@@ -611,12 +736,47 @@ async function processFile({ file, st }) {
         const crop = await toJpeg(img, 720, box, 0.85);
         photo = (await S.assets.upload(crop, { type: "image/jpeg" })).id;
       }
-      await S.db.collection("pieces").add(pieceFromAI(p, photo, src.id));
+      await S.db.collection("pieces").add(pieceFromAI(p, photo, src.id, opts));
     }
     set(found.length === 1 ? "1 peça adicionada" : found.length + " peças adicionadas", "ok");
   } catch (e) {
     set(errText(e), "err");
   }
+}
+
+// piece picker (used by albums, manual looks and trips)
+function pickPieces({ title, selected, nameField, nameValue, onlyIds }) {
+  return new Promise((resolve) => {
+    const dlg = $("#pick-dlg");
+    const sel = new Set(selected || []);
+    let cat = "todas", done = false;
+    const pool = onlyIds ? S.pieces.filter(p => onlyIds.includes(p.id)) : S.pieces;
+    const finish = (val) => { if (done) return; done = true; if (dlg.open) dlg.close(); resolve(val); };
+    const nameInp = nameField ? h("input", { type: "text", id: "pick-name", placeholder: "Nome do look (opcional)", value: nameValue || "" }) : null;
+    const grid = h("div", { class: "pick-grid" });
+    const chips = h("div", { class: "chips" });
+    const count = h("span", { class: "mono" });
+    const draw = () => {
+      const counts = {}; pool.forEach(p => { counts[p.cat] = (counts[p.cat] || 0) + 1; });
+      fill(chips, 
+        h("button", { type: "button", class: "chip", "aria-pressed": String(cat === "todas"), onclick: () => { cat = "todas"; draw(); } }, "Todas"),
+        ...CATS.filter(([k]) => counts[k]).map(([k, l]) => h("button", { type: "button", class: "chip", "aria-pressed": String(cat === k), onclick: () => { cat = k; draw(); } }, l)));
+      fill(grid, ...pool.filter(p => cat === "todas" || p.cat === cat).map(p =>
+        h("button", { type: "button", class: "pick", "aria-pressed": String(sel.has(p.id)), title: p.name, onclick: () => { sel.has(p.id) ? sel.delete(p.id) : sel.add(p.id); draw(); } },
+          h("img", { src: imgSrc(p.photo), alt: "", loading: "lazy" }), h("span", {}, p.name))));
+      count.textContent = sel.size + (sel.size === 1 ? " peça escolhida" : " peças escolhidas");
+    };
+    draw();
+    fill(dlg, h("div", { class: "pick-wrap" },
+      h("div", { class: "pick-top" }, h("h3", {}, title), nameInp, chips),
+      pool.length ? grid : h("p", { class: "lede" }, "Você ainda não tem peças no armário."),
+      h("div", { class: "pick-foot" }, count, h("span", { style: "display:flex;gap:8px" },
+        h("button", { type: "button", class: "btn ghost", onclick: () => finish(null) }, "Cancelar"),
+        h("button", { type: "button", class: "btn primary", onclick: () => finish({ ids: [...sel], name: nameInp ? nameInp.value.trim() : "" }) }, "Concluir")))
+    ));
+    dlg.onclose = () => finish(null);
+    dlg.showModal();
+  });
 }
 
 // piece dialog
@@ -626,7 +786,10 @@ function openPiece(id) {
   const dlg = $("#piece-dlg");
   $("#pf-img").src = imgSrc(p.showOriginal && p.src ? p.src : p.photo);
   $("#pf-name").value = p.name || "";
-  $("#pf-cat").value = p.cat || "outro";
+  $("#pf-cat").value = CAT_LABEL[p.cat] ? p.cat : "outro";
+  $("#pf-type").value = p.type || "";
+  S.editAlbums = new Set(p.albums || []);
+  drawPieceAlbums();
   $("#pf-form").value = clampForm(p.formality); $("#pf-form-lbl").textContent = FORM_LABEL[clampForm(p.formality)];
   $("#pf-colors").value = (p.colors || []).join(", ");
   $("#pf-pattern").value = p.pattern || "";
@@ -643,13 +806,18 @@ function openPiece(id) {
   const del = $("#pf-del"); del.textContent = "Excluir peça"; del.dataset.armed = "";
   if (dlg.showModal) dlg.showModal(); else dlg.setAttribute("open", "");
 }
+function drawPieceAlbums() {
+  const box = $("#pf-albums"); $("#pf-albums-wrap").hidden = !S.albums.length;
+  fill(box, ...S.albums.map(a => h("button", { type: "button", class: "chip", "aria-pressed": String(S.editAlbums.has(a.id)),
+    onclick: () => { S.editAlbums.has(a.id) ? S.editAlbums.delete(a.id) : S.editAlbums.add(a.id); drawPieceAlbums(); } }, a.name)));
+}
 function closePiece() { const d = $("#piece-dlg"); if (d.close) d.close(); else d.removeAttribute("open"); S.editing = null; }
 async function savePiece(ev) {
   ev.preventDefault();
   const id = S.editing; if (!id || !S.db) return closePiece();
   const seasons = ["#pf-s-verao", "#pf-s-meia", "#pf-s-inverno"].filter(s => $(s).checked).map(s => $(s).value);
   const data = {
-    name: $("#pf-name").value.trim() || "Peça", cat: $("#pf-cat").value, formality: clampForm($("#pf-form").value),
+    name: $("#pf-name").value.trim() || "Peça", cat: $("#pf-cat").value, type: $("#pf-type").value.trim(), albums: [...(S.editAlbums || [])], formality: clampForm($("#pf-form").value),
     colors: asList($("#pf-colors").value), pattern: $("#pf-pattern").value.trim(), fabric: $("#pf-fabric").value.trim(),
     brand: $("#pf-brand").value.trim(), style: asList($("#pf-style").value), notes: $("#pf-notes").value.trim(),
     seasons, available: $("#pf-avail").checked, showOriginal: $("#pf-orig").checked
@@ -681,7 +849,7 @@ Responda em português do Brasil, só com JSON:
 Use apenas ids que existem na lista. "parecidas" fica vazia se eu não tiver nada parecido.`;
 async function shopCheck(file) {
   const out = $("#shop-out"); out.hidden = false;
-  const panel = h("div", { class: "panel" }); out.replaceChildren(panel);
+  const panel = h("div", { class: "panel" }); fill(out, panel);
   if (!S.sample || !S.imagesOK) { say(panel, "O Claude precisa ver a foto. Abra a página no claude.ai.", "err"); return; }
   if (!S.pieces.length) { say(panel, "Cadastre algumas peças primeiro para eu poder comparar.", "err"); return; }
   thinking(panel, "Comparando com o seu armário…");
@@ -692,7 +860,7 @@ async function shopCheck(file) {
     const parecidas = (Array.isArray(r.parecidas) ? r.parecidas : []).filter(x => x && S.byId[x.id]);
     const combina = validIds(r.combina_com);
     const thumb = URL.createObjectURL(blob);
-    panel.replaceChildren(
+    fill(panel, 
       h("div", { style: "display:flex;gap:14px;align-items:flex-start" },
         h("img", { src: thumb, alt: "", style: "width:84px;height:104px;object-fit:cover;border-radius:8px;flex:none" }),
         h("div", { style: "display:grid;gap:6px;min-width:0" },
@@ -710,7 +878,7 @@ async function shopCheck(file) {
           h("td", {}, h("strong", {}, S.byId[x.id].name), h("br"), h("span", { class: "lede" }, x.nota || ""))))))) : null,
       combina.length ? h("div", {}, h("p", { class: "mono", style: "margin-bottom:6px" }, "Combina com"),
         h("div", { class: "collage" }, combina.slice(0, 9).map(id => thumbBtn(id)))) : null,
-      h("div", {}, h("button", { class: "btn small ghost", onclick: () => { out.hidden = true; out.replaceChildren(); } }, "Fechar"))
+      h("div", {}, h("button", { class: "btn small ghost", onclick: () => { out.hidden = true; fill(out); } }, "Fechar"))
     );
   } catch (e) { say(panel, errText(e), "err"); }
 }
@@ -751,14 +919,14 @@ async function genLooks() {
   const status = $("#look-status"), out = $("#look-out");
   if (S.pieces.filter(p => p.available !== false).length < 2) { say(status, "Cadastre pelo menos algumas peças no Armário antes de pedir looks.", "err"); return; }
   thinking(status, "Montando looks com as suas peças…");
-  out.replaceChildren();
+  fill(out);
   const req = $("#look-req").value.trim();
   try {
     const r = await ask(LOOKS_PROMPT({ req, anchor: $("#look-anchor").value, n: $("#look-n").value, cat: catalogText() }), {}, { go: $("#look-go"), stop: $("#look-stop") });
     const looks = (r && Array.isArray(r.looks) ? r.looks : []).filter(l => validIds(l.pecas).length);
     if (!looks.length) { say(status, "Não consegui montar looks com esse pedido. Tente descrever de outro jeito.", "err"); return; }
-    status.replaceChildren();
-    out.replaceChildren(...looks.map(l => {
+    fill(status);
+    fill(out, ...looks.map(l => {
       const look = { titulo: l.titulo, pecas: validIds(l.pecas), porque: l.porque, dica: l.dica, origem: "pedido", pedido: req };
       return lookCard(look, { actions: [saveLookBtn(look)] });
     }));
@@ -779,16 +947,16 @@ function saveLookBtn(look, beforeSave) {
 }
 function renderSaved() {
   const out = $("#saved-looks");
-  const f = $("#saved-filter"); f.replaceChildren();
-  const ORIG = [["todos", "Todos"], ["pedido", "Pedidos"], ["inspiracao", "Inspirações"], ["mala", "Malas"]];
+  const f = $("#saved-filter"); fill(f);
+  const ORIG = [["todos", "Todos"], ["manual", "Montados por mim"], ["pedido", "Pedidos ao Claude"], ["inspiracao", "Inspirações"]];
   if (S.looks.length) ORIG.forEach(([k, l]) => {
     const c = k === "todos" ? S.looks.length : S.looks.filter(x => x.origem === k).length;
     if (c || k === "todos") f.append(h("button", { class: "chip", "aria-pressed": String(S.savedFilter === k), onclick: () => { S.savedFilter = k; renderSaved(); } }, l, h("b", {}, c)));
   });
-  if (!S.loaded.looks) { out.replaceChildren(); return; }
+  if (!S.loaded.looks) { fill(out); return; }
   const list = S.looks.filter(l => S.savedFilter === "todos" || l.origem === S.savedFilter);
-  if (!list.length) { out.replaceChildren(h("p", { class: "lede" }, "Os looks que você salvar aparecem aqui.")); return; }
-  out.replaceChildren(...list.map(l => {
+  if (!list.length) { fill(out, h("p", { class: "lede" }, "Os looks que você salvar aparecem aqui.")); return; }
+  fill(out, ...list.map(l => {
     const del = h("button", { class: "btn small ghost", onclick: async () => {
       if (!del.dataset.armed) { del.dataset.armed = "1"; del.textContent = "Confirmar"; return; }
       try { await S.db.collection("looks").doc(l.id).delete(); if (l.inspo && S.assets && !S.looks.some(x => x.id !== l.id && x.inspo === l.inspo)) { try { await S.assets.delete(l.inspo); } catch (_) {} } } catch (e) { toast(errText(e)); }
@@ -798,7 +966,7 @@ function renderSaved() {
 }
 function fillAnchor() {
   const sel = $("#look-anchor"); const cur = sel.value;
-  sel.replaceChildren(h("option", { value: "" }, "Qualquer peça"),
+  fill(sel, h("option", { value: "" }, "Qualquer peça"),
     ...CATS.map(([k, l]) => {
       const ps = S.pieces.filter(p => p.cat === k && p.available !== false);
       return ps.length ? h("optgroup", { label: l }, ps.map(p => h("option", { value: p.id }, p.name))) : null;
@@ -839,7 +1007,7 @@ async function genInsp() {
   thinking(status, "Analisando a inspiração e procurando no seu armário…");
   try {
     const r = await ask(INSP_PROMPT({ note: $("#insp-note").value.trim(), cat: catalogText() }), { images: [S.insp.blob] }, { go: $("#insp-go"), stop: $("#insp-stop") });
-    status.replaceChildren();
+    fill(status);
     const blob = S.insp.blob;
     let inspoId = null;
     const uploadInspo = async () => {
@@ -849,7 +1017,7 @@ async function genInsp() {
     const pf = Array.isArray(r.pecas_foto) ? r.pecas_foto : [];
     const looks = (Array.isArray(r.looks) ? r.looks : []).filter(l => validIds(l.pecas).length);
     const falt = Array.isArray(r.faltando) ? r.faltando : [];
-    out.replaceChildren(
+    fill(out, 
       h("div", { class: "panel" },
         h("span", { class: "mono" }, "O look da foto"),
         h("h3", {}, r.descricao || "Look de inspiração"),
@@ -872,97 +1040,201 @@ async function genInsp() {
 }
 
 // ---------- MALA ----------
+const uid = () => Math.random().toString(36).slice(2, 10);
+function tripDays(t) {
+  if (t.inicio && t.fim) { const d = Math.round((Date.parse(t.fim) - Date.parse(t.inicio)) / 864e5) + 1; if (d > 0 && d < 400) return d; }
+  return Number(t.dias) || 0;
+}
+function fmtDate(iso, withYear) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || ""); if (!m) return "";
+  return m[3] + "/" + m[2] + (withYear ? "/" + m[1] : "");
+}
+function fmtRange(t) {
+  if (!t.inicio) return tripDays(t) ? tripDays(t) + " dias" : "Sem data";
+  if (!t.fim || t.fim === t.inicio) return fmtDate(t.inicio, true);
+  return fmtDate(t.inicio, t.inicio.slice(0, 4) !== t.fim.slice(0, 4)) + " – " + fmtDate(t.fim, true);
+}
+function tripProgress(t) {
+  const keys = [...(t.pecas || []).filter(id => S.byId[id]), ...(t.checklist || []).map(c => c.id)];
+  const done = keys.filter(k => t.checked && t.checked[k]).length;
+  return { done, total: keys.length, pct: keys.length ? Math.round(done / keys.length * 100) : 0 };
+}
+let tripWrite = Promise.resolve();
+function tripUpdate(t, patch) {
+  Object.assign(t, patch); renderTrips();
+  tripWrite = tripWrite.then(() => S.db.collection("trips").doc(t.id).update(patch)).catch(e => toast(errText(e)));
+  return tripWrite;
+}
+function toggleCheck(t, key, val) {
+  const checked = Object.assign({}, t.checked || {});
+  if (val) checked[key] = true; else delete checked[key];
+  tripUpdate(t, { checked });
+}
+
 const TRIP_PROMPT = (t, cat) => `Você é uma stylist montando a mala de uma viagem com peças do meu guarda-roupa.
-Viagem: ${t.destino || "destino não informado"}, ${t.dias} dias, clima: ${t.clima}, bagagem: ${t.bagagem}.
-Programação: ${t.ocasioes || "passeios variados"}.
+Viagem: ${t.destino || "destino não informado"}${t.inicio ? ", de " + fmtDate(t.inicio, true) + " a " + fmtDate(t.fim || t.inicio, true) : ""}, ${tripDays(t) || "alguns"} dias.
+Tipo: ${t.tipo}. Estação: ${t.estacao}. Bagagem: ${t.bagagem}.
+Programação: ${t.programacao || "passeios variados"}.
 ${t.obs ? "Observações: " + t.obs : ""}
+${(t.pecas || []).length ? "Peças que já escolhi (mantenha todas e complete): " + t.pecas.join(", ") : ""}
+${(t.checklist || []).length ? "Itens que já estão no checklist: " + t.checklist.map(c => c.text).join(", ") : ""}
 
 ${CATALOG_HEAD}
 ${cat}
 
 Regras:
-- Escolha poucas peças que combinem entre si e rendam muitos looks (cápsula). Ajuste a quantidade ao tamanho da bagagem.
+- Escolha poucas peças que combinem entre si e rendam muitos looks (cápsula). Ajuste a quantidade ao tamanho da bagagem e ao clima do destino nessa época.
 - Monte um look por dia (ou por ocasião), usando SOMENTE as peças escolhidas e os ids exatos.
-- Em "extras", liste o que não está no catálogo mas eu não posso esquecer (roupa íntima, pijama, itens de clima). No máximo 8.
+- Em "checklist", liste o que não está no catálogo mas não posso esquecer (roupa íntima, pijama, documentos, itens de clima), sem repetir o que já está no checklist. No máximo 8.
 Responda em português do Brasil, só com JSON:
-{"resumo":"1 frase sobre a estratégia da mala","pecas":["id1","id2"],"looks":[{"dia":"Dia 1","ocasiao":"passeio","pecas":["id1","id2"]}],"extras":["..."],"dicas":["no máximo 3 dicas curtas"]}`;
-async function genTrip() {
+{"resumo":"1 frase sobre a estratégia da mala","pecas":["id1","id2"],"looks":[{"dia":"Dia 1","ocasiao":"passeio","pecas":["id1","id2"]}],"checklist":["..."],"dicas":["no máximo 3 dicas curtas"]}`;
+
+async function aiTrip(t, ui) {
+  const r = await ask(TRIP_PROMPT(t, catalogText()), {}, ui);
+  const looks = (Array.isArray(r.looks) ? r.looks : []).map(l => ({ id: uid(), titulo: [l.dia, l.ocasiao].filter(Boolean).join(" · "), pecas: validIds(l.pecas), origem: "claude" })).filter(l => l.pecas.length);
+  const pecas = [...new Set([...(t.pecas || []), ...validIds(r.pecas), ...looks.flatMap(l => l.pecas)])];
+  if (!pecas.length) throw { message: "Não consegui montar a mala. Tente de novo com mais detalhes." };
+  const have = new Set((t.checklist || []).map(c => fold(c.text)));
+  const checklist = [...(t.checklist || []), ...asList(r.checklist).filter(x => !have.has(fold(x))).slice(0, 10).map(text => ({ id: uid(), text }))];
+  return {
+    resumo: String(r.resumo || t.resumo || ""), pecas, checklist,
+    looks: [...(t.looks || []).filter(l => l.origem !== "claude"), ...looks],
+    dicas: asList(r.dicas).slice(0, 4)
+  };
+}
+function tripForm() {
+  return {
+    destino: $("#t-dest").value.trim(), inicio: $("#t-start").value, fim: $("#t-end").value || $("#t-start").value,
+    tipo: $("#t-type").value, estacao: $("#t-season").value, bagagem: $("#t-bag").value,
+    programacao: $("#t-occ").value.trim(), obs: $("#t-notes").value.trim()
+  };
+}
+async function createTrip(withAI) {
   const status = $("#trip-status");
-  if (!S.db) { say(status, "Abra esta página no claude.ai para montar e salvar malas.", "err"); return; }
-  if (S.pieces.filter(p => p.available !== false).length < 3) { say(status, "Cadastre mais peças no Armário primeiro.", "err"); return; }
-  const t = { destino: $("#t-dest").value.trim(), dias: Math.max(1, Math.min(60, Number($("#t-days").value) || 3)), clima: $("#t-clima").value, bagagem: $("#t-bag").value, ocasioes: $("#t-occ").value.trim(), obs: $("#t-notes").value.trim() };
-  thinking(status, "Escolhendo as peças e montando os looks da viagem…");
+  if (!S.db) { say(status, "Abra esta página no claude.ai para criar malas.", "err"); return; }
+  const t = Object.assign(tripForm(), { pecas: [], looks: [], checklist: [], checked: {}, dicas: [], resumo: "", color: S.trips.length % 6, createdAt: Date.now() });
+  if (!t.destino) { say(status, "Escreva o destino da viagem.", "err"); $("#t-dest").focus(); return; }
+  if (t.inicio && t.fim && t.fim < t.inicio) { say(status, "A volta está antes da ida. Confira as datas.", "err"); return; }
+  if (withAI) {
+    if (S.pieces.filter(p => p.available !== false).length < 3) { say(status, "Cadastre mais peças no Armário para o Claude montar a mala, ou crie a mala vazia.", "err"); return; }
+    thinking(status, "Escolhendo as peças e montando os looks da viagem…");
+    try { Object.assign(t, await aiTrip(t, { go: $("#trip-create-ai") })); }
+    catch (e) { say(status, errText(e), e.code === "cancelled" ? "" : "err"); return; }
+  }
   try {
-    const r = await ask(TRIP_PROMPT(t, catalogText()), {}, { go: $("#trip-go"), stop: $("#trip-stop") });
-    const looks = (Array.isArray(r.looks) ? r.looks : []).map(l => ({ dia: String(l.dia || ""), ocasiao: String(l.ocasiao || ""), pecas: validIds(l.pecas) })).filter(l => l.pecas.length);
-    const pecas = [...new Set([...validIds(r.pecas), ...looks.flatMap(l => l.pecas)])];
-    if (!pecas.length) { say(status, "Não consegui montar a mala. Tente de novo com mais detalhes.", "err"); return; }
-    const ref = await S.db.collection("trips").add({ ...t, resumo: String(r.resumo || ""), pecas, looks, extras: asList(r.extras).slice(0, 12), dicas: asList(r.dicas).slice(0, 4), checked: {}, createdAt: Date.now() });
-    status.replaceChildren();
-    S.openTrip = ref.id; renderTrips();
-  } catch (e) { say(status, errText(e), e.code === "cancelled" ? "" : "err"); }
+    const ref = await S.db.collection("trips").add(t);
+    fill(status); S.newTrip = false;
+    ["#t-dest", "#t-start", "#t-end", "#t-occ", "#t-notes"].forEach(s => { $(s).value = ""; });
+    S.openTrip = ref.id; renderTrips(); window.scrollTo(0, 0);
+  } catch (e) { say(status, errText(e), "err"); }
 }
-function tripProgress(t) {
-  const keys = [...(t.pecas || []), ...(t.extras || []).map((_, i) => "x" + i)];
-  const done = keys.filter(k => t.checked && t.checked[k]).length;
-  return { done, total: keys.length };
-}
-let tripWrite = Promise.resolve();
-function toggleCheck(t, key, val) {
-  const checked = Object.assign({}, t.checked || {}, { [key]: val });
-  if (!val) delete checked[key];
-  tripWrite = tripWrite.then(() => S.db.collection("trips").doc(t.id).update({ checked })).catch(e => toast(errText(e)));
+
+function tripCard(t) {
+  const pr = tripProgress(t);
+  return h("button", { class: "trip c" + ((t.color || 0) % 6), onclick: () => { S.openTrip = t.id; renderTrips(); window.scrollTo(0, 0); } },
+    h("div", { class: "trip-main" },
+      h("span", { class: "trip-dest" }, t.destino || "Viagem"),
+      h("span", { class: "trip-dates mono" }, fmtRange(t))),
+    h("div", { class: "trip-side mono" }, h("span", {}, t.tipo || ""), h("span", {}, t.estacao || "")),
+    h("div", { class: "trip-bar" },
+      h("div", { class: "meter" }, h("i", { style: "width:" + pr.pct + "%" })),
+      h("span", { class: "mono" }, pr.pct + "%")));
 }
 function renderTrips() {
-  const list = $("#trip-list"), detail = $("#trip-detail"), form = $("#trip-form-wrap");
+  const list = $("#trip-list"), detail = $("#trip-detail"), home = $("#trip-home");
+  $("#trip-form").hidden = !S.newTrip; $("#trip-new").hidden = S.newTrip;
   const t = S.openTrip && S.trips.find(x => x.id === S.openTrip);
-  detail.hidden = !t; form.hidden = !!t;
-  if (t) {
-    const pr = tripProgress(t);
-    const row = (key, label, photo) => {
-      const id = "ck-" + t.id + "-" + key.replace(/[^a-zA-Z0-9_-]/g, "");
-      const on = !!(t.checked && t.checked[key]);
-      return h("div", { class: "check" + (on ? " done" : "") },
-        h("input", { type: "checkbox", id, checked: on, onchange: (e) => toggleCheck(t, key, e.target.checked) }),
-        photo ? h("img", { src: imgSrc(photo), alt: "" }) : null,
-        h("label", { for: id }, label));
-    };
-    const del = h("button", { class: "btn small danger", onclick: async () => {
-      if (!del.dataset.armed) { del.dataset.armed = "1"; del.textContent = "Toque de novo para excluir"; return; }
-      try { await S.db.collection("trips").doc(t.id).delete(); S.openTrip = null; renderTrips(); } catch (e) { toast(errText(e)); }
-    } }, "Excluir mala");
-    detail.replaceChildren(
-      h("div", { class: "toolbar" }, h("button", { class: "btn small", onclick: () => { S.openTrip = null; renderTrips(); } }, "← Todas as malas"), del),
-      h("div", { class: "head" }, h("span", { class: "mono" }, [t.dias + (t.dias == 1 ? " dia" : " dias"), t.clima, t.bagagem].join(" · ")), h("h2", {}, t.destino || "Viagem"), t.resumo ? h("p", { class: "lede" }, t.resumo) : null),
-      h("div", { class: "cols2" },
+  detail.hidden = !t; home.hidden = !!t;
+  if (t) renderTripDetail(t, detail);
+  if (!S.loaded.trips) { fill(list); return; }
+  if (!S.trips.length) { fill(list, h("p", { class: "lede" }, "Nenhuma mala ainda. Toque em + Nova mala.")); return; }
+  const sorted = [...S.trips].sort((a, b) => (b.inicio || "").localeCompare(a.inicio || "") || (b.createdAt || 0) - (a.createdAt || 0));
+  fill(list, ...sorted.map(tripCard));
+}
+function renderTripDetail(t, el) {
+  const pr = tripProgress(t);
+  const pieces = (t.pecas || []).filter(id => S.byId[id]);
+  const checkRow = (key, label, photo, onRemove) => {
+    const id = "ck-" + t.id + "-" + key;
+    const on = !!(t.checked && t.checked[key]);
+    return h("div", { class: "check" + (on ? " done" : "") },
+      h("input", { type: "checkbox", id, checked: on, onchange: (e) => toggleCheck(t, key, e.target.checked) }),
+      photo ? h("img", { src: imgSrc(photo), alt: "" }) : null,
+      h("label", { for: id }, label),
+      h("button", { class: "x", type: "button", "aria-label": "Tirar " + label, title: "Tirar da mala", onclick: onRemove }, "×"));
+  };
+  const status = h("div");
+  const aiBtn = h("button", { class: "btn primary", onclick: async () => {
+    if (S.pieces.filter(p => p.available !== false).length < 3) { say(status, "Cadastre mais peças no Armário primeiro.", "err"); return; }
+    thinking(status, (t.pecas || []).length ? "Completando a mala com o Claude…" : "Escolhendo as peças e montando os looks…");
+    try { const patch = await aiTrip(t, { go: aiBtn }); fill(status); tripUpdate(t, patch); toast("Mala montada"); }
+    catch (e) { say(status, errText(e), e.code === "cancelled" ? "" : "err"); }
+  } }, (t.pecas || []).length ? "Completar com o Claude" : "Montar com o Claude");
+  const del = h("button", { class: "btn small danger", onclick: async () => {
+    if (!del.dataset.armed) { del.dataset.armed = "1"; del.textContent = "Toque de novo para excluir"; return; }
+    try { await S.db.collection("trips").doc(t.id).delete(); S.openTrip = null; renderTrips(); } catch (e) { toast(errText(e)); }
+  } }, "Excluir mala");
+  const addItem = h("form", { class: "alb-new", onsubmit: (e) => {
+    e.preventDefault(); const inp = e.target.querySelector("input"); const text = inp.value.trim(); if (!text) return;
+    tripUpdate(t, { checklist: [...(t.checklist || []), { id: uid(), text }] }); setTimeout(() => $("#ck-new-" + t.id)?.focus(), 0);
+  } }, h("input", { type: "text", id: "ck-new-" + t.id, placeholder: "Adicionar item: carregador, remédio…", "aria-label": "Novo item do checklist" }), h("button", { class: "btn small", type: "submit" }, "Adicionar"));
+  const have = new Set((t.checklist || []).map(c => fold(c.text)));
+  const presets = CHECK_PRESETS.filter(x => !have.has(fold(x)));
+  const mapUrl = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(t.destino || "");
+  fill(el, 
+    h("div", { class: "toolbar" }, h("button", { class: "btn small ghost", onclick: () => { S.openTrip = null; renderTrips(); } }, "← Minhas malas"), h("span", { style: "flex:1" }), del),
+    h("div", { class: "trip-hero c" + ((t.color || 0) % 6) },
+      h("div", { class: "trip-main" },
+        h("span", { class: "mono" }, [fmtRange(t), tripDays(t) ? tripDays(t) + (tripDays(t) === 1 ? " dia" : " dias") : null].filter(Boolean).join(" · ")),
+        h("h2", { class: "trip-dest" }, t.destino || "Viagem"),
+        h("span", { class: "mono" }, [t.tipo, t.estacao, t.bagagem].filter(Boolean).join(" · ")),
+        t.destino ? h("a", { href: mapUrl, target: "_blank", rel: "noopener", class: "trip-map" }, "Ver no mapa ↗") : null),
+      h("div", { class: "trip-stat" }, h("span", { class: "big" }, String(pieces.length)), h("span", { class: "mono" }, pieces.length === 1 ? "peça na mala" : "peças na mala"))),
+    h("div", { style: "display:grid;gap:6px" },
+      h("div", { style: "display:flex;justify-content:space-between" }, h("span", { class: "mono" }, "Arrumação"), h("span", { class: "mono" }, pr.done + "/" + pr.total + " · " + pr.pct + "%")),
+      h("div", { class: "meter" }, h("i", { style: "width:" + pr.pct + "%" }))),
+    t.resumo ? h("p", { class: "lede" }, t.resumo) : null,
+    h("div", { class: "toolbar" }, aiBtn), status,
+    h("div", { class: "cols2" },
+      h("div", { style: "display:grid;gap:20px;min-width:0" },
         h("div", { class: "panel" },
-          h("div", { style: "display:flex;justify-content:space-between;align-items:baseline" }, h("h3", {}, "Checklist"), h("span", { class: "mono" }, pr.done + "/" + pr.total + " na mala")),
-          h("div", { class: "meter" }, h("i", { style: "width:" + (pr.total ? Math.round(pr.done / pr.total * 100) : 0) + "%" })),
-          h("div", {}, (t.pecas || []).filter(id => S.byId[id]).map(id => row(id, S.byId[id].name, S.byId[id].photo))),
-          (t.extras || []).length ? h("div", {}, h("p", { class: "mono", style: "margin:8px 0 2px" }, "Não esquecer"), t.extras.map((x, i) => row("x" + i, x))) : null,
-          (t.dicas || []).length ? h("ul", { style: "margin:0;padding-left:18px;color:var(--muted);font-size:.9rem" }, t.dicas.map(d => h("li", {}, d))) : null
-        ),
-        h("div", { style: "display:grid;gap:12px;min-width:0" }, h("h3", {}, "Looks da viagem"),
-          h("div", { class: "looks" }, (t.looks || []).map(l => lookCard({ titulo: [l.dia, l.ocasiao].filter(Boolean).join(" · "), pecas: l.pecas })))
-        )
+          h("div", { class: "alb-head" }, h("h3", {}, "Roupas"), h("button", { class: "btn small", onclick: async () => {
+            const r = await pickPieces({ title: "Peças para " + (t.destino || "a viagem"), selected: pieces }); if (r) tripUpdate(t, { pecas: r.ids });
+          } }, "Escolher peças")),
+          pieces.length ? h("div", {}, pieces.map(id => checkRow(id, S.byId[id].name, S.byId[id].photo, () => tripUpdate(t, { pecas: t.pecas.filter(x => x !== id) }))))
+            : h("p", { class: "lede" }, "Nenhuma peça ainda. Escolha você mesma ou peça ao Claude.")),
+        h("div", { class: "panel" },
+          h("h3", {}, "Checklist"),
+          (t.checklist || []).length ? h("div", {}, t.checklist.map(c => checkRow(c.id, c.text, null, () => tripUpdate(t, { checklist: t.checklist.filter(x => x.id !== c.id) })))) : null,
+          addItem,
+          presets.length ? h("div", { class: "chips" }, presets.map(x => h("button", { class: "chip", type: "button", onclick: () => tripUpdate(t, { checklist: [...(t.checklist || []), { id: uid(), text: x }] }) }, "+ " + x))) : null),
+        (t.dicas || []).length ? h("div", { class: "panel" }, h("h3", {}, "Dicas"), h("ul", { style: "margin:0;padding-left:18px;color:var(--muted)" }, t.dicas.map(d => h("li", {}, d)))) : null
+      ),
+      h("div", { style: "display:grid;gap:12px;min-width:0;align-content:start" },
+        h("div", { class: "alb-head" }, h("h3", {}, "Looks da viagem"), h("button", { class: "btn small", onclick: async () => {
+          const r = await pickPieces({ title: "Novo look para " + (t.destino || "a viagem"), nameField: true, selected: [] });
+          if (!r || !r.ids.length) return;
+          tripUpdate(t, { looks: [...(t.looks || []), { id: uid(), titulo: r.name || "Look " + ((t.looks || []).length + 1), pecas: r.ids, origem: "manual" }], pecas: [...new Set([...(t.pecas || []), ...r.ids])] });
+        } }, "+ Novo look")),
+        (t.looks || []).length ? h("div", { class: "looks" }, t.looks.map(l => lookCard(l, { actions: [h("button", { class: "btn small ghost", onclick: () => tripUpdate(t, { looks: t.looks.filter(x => x.id !== l.id) }) }, "Remover")] })))
+          : h("p", { class: "lede" }, "Monte os looks de cada dia, ou toque em Montar com o Claude.")
       )
-    );
-  }
-  if (!S.loaded.trips) { list.replaceChildren(); return; }
-  if (!S.trips.length) { list.replaceChildren(h("p", { class: "lede" }, "Nenhuma mala ainda. Preencha a viagem ao lado e toque em Montar mala.")); return; }
-  list.replaceChildren(...S.trips.map(x => {
-    const pr = tripProgress(x);
-    return h("button", { class: "trip-card", onclick: () => { S.openTrip = x.id; renderTrips(); window.scrollTo(0, 0); } },
-      h("div", { style: "display:flex;justify-content:space-between;gap:8px;align-items:baseline" }, h("strong", {}, x.destino || "Viagem"), h("span", { class: "mono" }, x.dias + "d · " + (x.pecas || []).length + " peças")),
-      h("div", { class: "meter" }, h("i", { style: "width:" + (pr.total ? Math.round(pr.done / pr.total * 100) : 0) + "%" })),
-      h("span", { class: "mono" }, pr.done + "/" + pr.total + " na mala"));
-  }));
+    )
+  );
+}
+
+async function manualLook() {
+  if (!S.db) { toast("Abra esta página no claude.ai para salvar looks."); return; }
+  const r = await pickPieces({ title: "Montar meu look", nameField: true, selected: [] });
+  if (!r || !r.ids.length) return;
+  try { await S.db.collection("looks").add({ titulo: r.name || "Meu look", pecas: r.ids, origem: "manual", createdAt: Date.now() }); S.savedFilter = "todos"; toast("Look salvo"); }
+  catch (e) { toast(errText(e)); }
 }
 
 // ---------- wiring ----------
 function renderAll() { renderCloset(); fillAnchor(); renderSaved(); renderTrips(); }
 function setup() {
-  $("#pf-cat").replaceChildren(...CATS.map(([k, l]) => h("option", { value: k }, l)));
+  fill($("#pf-cat"), ...CATS.map(([k, l]) => h("option", { value: k }, l)));
   $("#pf-form").addEventListener("input", (e) => { $("#pf-form-lbl").textContent = FORM_LABEL[clampForm(e.target.value)]; });
   $("#piece-form").addEventListener("submit", savePiece);
   $("#pf-cancel").addEventListener("click", closePiece);
@@ -971,25 +1243,35 @@ function setup() {
   $("#add-files").addEventListener("change", (e) => { const f = [...e.target.files]; e.target.value = ""; addFiles(f); });
   $("#shop-file").addEventListener("change", (e) => { const f = e.target.files[0]; e.target.value = ""; if (f) shopCheck(f); });
   $("#q").addEventListener("input", (e) => { S.filter.q = e.target.value; renderCloset(); });
-  $("#look-presets").replaceChildren(...PRESETS.map(p => h("button", { class: "chip", type: "button", onclick: () => { const ta = $("#look-req"); ta.value = ta.value.trim() ? ta.value.trim() + ". " + p : p; ta.focus(); } }, p)));
+  fill($("#look-presets"), ...PRESETS.map(p => h("button", { class: "chip", type: "button", onclick: () => { const ta = $("#look-req"); ta.value = ta.value.trim() ? ta.value.trim() + ". " + p : p; ta.focus(); } }, p)));
   $("#look-go").addEventListener("click", genLooks);
   $("#insp-file").addEventListener("change", (e) => { pickInsp(e.target.files[0]); e.target.value = ""; });
   $("#insp-go").addEventListener("click", genInsp);
-  $("#trip-go").addEventListener("click", genTrip);
+  $("#manual-look").addEventListener("click", manualLook);
+  fill($("#t-type"), ...TRIP_TYPES.map(x => h("option", {}, x)));
+  fill($("#t-season"), ...TRIP_SEASONS.map(x => h("option", {}, x)));
+  $("#trip-new").addEventListener("click", () => { S.newTrip = true; renderTrips(); $("#t-dest").focus(); });
+  $("#trip-cancel").addEventListener("click", () => { S.newTrip = false; fill($("#trip-status")); renderTrips(); });
+  $("#trip-create").addEventListener("click", () => createTrip(false));
+  $("#trip-create-ai").addEventListener("click", () => createTrip(true));
+  $("nav.tabs").addEventListener("click", (e) => { const a = e.target.closest("a"); if (!a) return;
+    if (a.dataset.tab === "armario" && location.hash.slice(1) === "armario") { S.filter.q = ""; $("#q").value = ""; goView("home"); }
+    if (a.dataset.tab === "mala" && location.hash.slice(1) === "mala") { S.openTrip = null; renderTrips(); } });
   route(); renderAll();
 }
 
 function subscribe(name, key, sortDesc) {
-  const timer = setTimeout(() => { if (!S.loaded[key]) { const b = $("#env-banner"); b.hidden = false; b.replaceChildren(h("strong", {}, "Ainda carregando. "), "Seus dados estão demorando para chegar; confira a conexão."); } }, 10000);
+  const timer = setTimeout(() => { if (!S.loaded[key]) { const b = $("#env-banner"); b.hidden = false; fill(b, h("strong", {}, "Ainda carregando. "), "Seus dados estão demorando para chegar; confira a conexão."); } }, 10000);
   S.db.collection(name).onSnapshot((snap) => {
     S[key] = snap.docs.map(d => Object.assign({ id: d.id }, d.data())).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+    if (key === "albums") S.albums.reverse();
     if (key === "pieces") S.byId = Object.fromEntries(S.pieces.map(p => [p.id, p]));
     if (!snap.metadata.fromCache) { S.loaded[key] = true; clearTimeout(timer); if (Object.values(S.loaded).every(Boolean)) $("#env-banner").hidden = true; }
     else if (snap.size) S.loaded[key] = true;
     renderAll();
   }, (err) => {
     clearTimeout(timer); S.loaded[key] = true;
-    const b = $("#env-banner"); b.hidden = false; b.replaceChildren(h("strong", {}, "Não consegui carregar seus dados. "), err && err.message ? err.message : "Recarregue a página.");
+    const b = $("#env-banner"); b.hidden = false; fill(b, h("strong", {}, "Não consegui carregar seus dados. "), err && err.message ? err.message : "Recarregue a página.");
     renderAll();
   });
 }
@@ -1002,11 +1284,11 @@ async function boot() {
   if (sample) { try { const lim = await sample.limits(); S.imagesOK = !!(lim && lim.images); } catch (_) { S.imagesOK = false; } }
   if (!db) {
     const b = $("#env-banner"); b.hidden = false;
-    b.replaceChildren(h("strong", {}, "Modo de visualização. "), "Abra esta página no claude.ai, com a sua conta, para guardar peças e usar o assistente.");
-    S.loaded = { pieces: true, looks: true, trips: true };
+    fill(b, h("strong", {}, "Modo de visualização. "), "Abra esta página no claude.ai, com a sua conta, para guardar peças e usar o assistente.");
+    S.loaded = { pieces: true, looks: true, trips: true, albums: true };
     renderAll(); return;
   }
-  subscribe("pieces", "pieces"); subscribe("looks", "looks"); subscribe("trips", "trips");
+  subscribe("pieces", "pieces"); subscribe("looks", "looks"); subscribe("trips", "trips"); subscribe("albums", "albums");
 }
 boot();
 })();

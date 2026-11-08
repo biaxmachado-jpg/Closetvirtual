@@ -14,7 +14,8 @@ App publicado: https://claude.ai/artifact/R4sEkrMeJu1x2P79sqEZvG
 - **Estou numa loja**: foto de uma peça na loja → mostra o que você já tem de parecido e com o que combina.
 - **Looks**: peça um look em texto ("jantar de sexta, friozinho") e receba combinações com as suas peças.
 - **Inspiração**: suba um print do Instagram/Pinterest → equivalentes no seu armário, looks e o que falta.
-- **Mala**: destino, dias, clima e programação → peças escolhidas, look por dia e checklist.
+- **Álbuns**: peças organizadas em Parte de cima, Parte de baixo, Terceira peça, Peça única, Calçado, Acessório, Praia e Fitness, com "+" para adicionar direto na categoria, e álbuns próprios (Trabalho, Favoritas…).
+- **Malas**: viagens com destino, datas, tipo e estação; roupas, looks por dia e checklist com progresso. O Claude pode montar ou completar a mala.
 
 ## Código
 
