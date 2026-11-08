@@ -1,0 +1,1013 @@
+<title>Closet Virtual</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: sticky header with four sections; the wardrobe is a grid of hang-tag cards, looks are photo collages. */
+:root {
+  --bg: #eef0f4;
+  --surface: #ffffff;
+  --sunk: #e4e7ee;
+  --ink: #15171c;
+  --muted: #5a606d;
+  --line: #d5d9e2;
+  --accent: #2c43c4;
+  --accent-ink: #ffffff;
+  --accent-soft: #e3e7fa;
+  --ok: #1f7a4d;
+  --warn: #9a5b00;
+  --err: #b42318;
+  --shadow: 0 1px 2px rgba(20, 24, 40, .06), 0 6px 18px rgba(20, 24, 40, .06);
+  --f-display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --f-body: "Figtree", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --r: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #101217; --surface: #191c23; --sunk: #22262f; --ink: #eceef3; --muted: #9ba2b0;
+    --line: #2c303b; --accent: #93a3ff; --accent-ink: #0d1124; --accent-soft: #232a4a;
+    --ok: #5fd49a; --warn: #f0b45a; --err: #ff8a80;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 6px 18px rgba(0,0,0,.25);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #101217; --surface: #191c23; --sunk: #22262f; --ink: #eceef3; --muted: #9ba2b0;
+  --line: #2c303b; --accent: #93a3ff; --accent-ink: #0d1124; --accent-soft: #232a4a;
+  --ok: #5fd49a; --warn: #f0b45a; --err: #ff8a80;
+  --shadow: 0 1px 2px rgba(0,0,0,.4), 0 6px 18px rgba(0,0,0,.25);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.5; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--surface); }
+h1, h2, h3 { font-family: var(--f-display); font-weight: 700; line-height: 1.15; text-wrap: balance; margin: 0; }
+h2 { font-size: 1.45rem; }
+h3 { font-size: 1.05rem; }
+p { margin: 0; }
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.wrap { max-width: 1120px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+header.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--surface); border-bottom: 1px solid var(--line); }
+header.top .wrap { display: flex; align-items: center; gap: 16px; padding-block: 10px; flex-wrap: wrap; }
+.brand { display: flex; align-items: baseline; gap: 8px; margin-right: auto; }
+.brand h1 { font-size: 1.3rem; letter-spacing: -.01em; }
+.brand span { font-family: var(--f-mono); font-size: .72rem; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; }
+nav.tabs { display: flex; gap: 4px; overflow-x: auto; max-width: 100%; scrollbar-width: none; }
+nav.tabs a { text-decoration: none; color: var(--muted); font-weight: 600; padding: 7px 12px; border-radius: 999px; white-space: nowrap; font-size: .93rem; }
+nav.tabs a:hover { color: var(--ink); background: var(--sunk); }
+nav.tabs a[aria-current="page"] { background: var(--ink); color: var(--bg); }
+
+main { padding-block: 24px 64px; }
+section.view { display: grid; gap: 20px; }
+.lede { color: var(--muted); max-width: 62ch; }
+.head { display: grid; gap: 6px; }
+
+.banner { border: 1px solid var(--line); background: var(--surface); border-radius: var(--r); padding: 12px 14px; color: var(--muted); }
+.banner strong { color: var(--ink); }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid var(--line); background: var(--surface); padding: 9px 14px; border-radius: 8px; font-weight: 600; cursor: pointer; text-decoration: none; }
+.btn:hover { border-color: var(--muted); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.btn.primary:hover { filter: brightness(1.06); }
+.btn.ghost { background: transparent; border-color: transparent; color: var(--muted); }
+.btn.ghost:hover { color: var(--ink); background: var(--sunk); }
+.btn.danger { color: var(--err); }
+.btn[disabled] { opacity: .55; cursor: not-allowed; }
+.btn.small { padding: 5px 10px; font-size: .85rem; }
+.file-btn { position: relative; overflow: hidden; }
+.file-btn input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+
+.toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.toolbar .search { flex: 1 1 220px; min-width: 0; }
+input[type="text"], input[type="search"], input[type="number"], select, textarea {
+  width: 100%; border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 9px 11px;
+}
+textarea { resize: vertical; min-height: 84px; }
+label.field { display: grid; gap: 4px; font-size: .88rem; font-weight: 600; min-width: 0; }
+label.field small { font-weight: 400; color: var(--muted); }
+.row { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 4px 11px; font-size: .85rem; cursor: pointer; color: var(--muted); }
+.chip:hover { color: var(--ink); border-color: var(--muted); }
+.chip[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--ink); }
+.chip b { font-family: var(--f-mono); font-weight: 500; font-size: .75rem; margin-left: 4px; color: var(--muted); }
+
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 18px; display: grid; gap: 14px; min-width: 0; }
+
+/* hang-tag piece cards */
+.grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(158px, 1fr)); }
+.piece { background: var(--surface); border-radius: var(--r); box-shadow: var(--shadow); overflow: hidden; display: grid; grid-template-rows: auto 1fr; cursor: pointer; text-align: left; border: 0; padding: 0; position: relative; }
+.piece .ph { aspect-ratio: 4 / 5; background: var(--sunk); display: grid; place-items: center; overflow: hidden; }
+.piece .ph img { width: 100%; height: 100%; object-fit: contain; }
+.piece .tag { padding: 10px 12px 12px; display: grid; gap: 4px; position: relative; border-top: 1px dashed var(--line); }
+.piece .tag::before { content: ""; position: absolute; top: -6px; left: 14px; width: 10px; height: 10px; border-radius: 50%; background: var(--bg); border: 1px solid var(--line); }
+.piece .nm { font-weight: 600; font-size: .92rem; line-height: 1.3; }
+.mono { font-family: var(--f-mono); font-size: .7rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.dots { display: inline-flex; gap: 3px; vertical-align: middle; }
+.dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--line); }
+.dots i.on { background: var(--accent); }
+.piece.off .ph img { opacity: .4; }
+.piece .flag { position: absolute; top: 8px; left: 8px; background: var(--surface); border-radius: 999px; padding: 2px 8px; }
+
+.empty { border: 1px dashed var(--line); border-radius: var(--r); padding: 22px; display: grid; gap: 12px; background: var(--surface); }
+.empty ol { margin: 0; padding-left: 20px; display: grid; gap: 6px; color: var(--muted); }
+.empty ol strong { color: var(--ink); }
+
+/* upload queue */
+.queue { display: grid; gap: 6px; }
+.qrow { display: flex; gap: 10px; align-items: center; font-size: .88rem; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; }
+.qrow .fn { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.qrow .st { color: var(--muted); white-space: nowrap; }
+.qrow .st.ok { color: var(--ok); } .qrow .st.warn { color: var(--warn); } .qrow .st.err { color: var(--err); }
+
+/* looks */
+.looks { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); }
+.look { background: var(--surface); border-radius: var(--r); box-shadow: var(--shadow); padding: 14px; display: grid; gap: 10px; align-content: start; min-width: 0; }
+.collage { display: grid; gap: 6px; grid-template-columns: repeat(3, 1fr); }
+.collage.n1 { grid-template-columns: 1fr; } .collage.n2, .collage.n4 { grid-template-columns: repeat(2, 1fr); }
+.collage button { border: 0; padding: 0; background: var(--sunk); border-radius: 6px; aspect-ratio: 1; overflow: hidden; cursor: pointer; }
+.collage img { width: 100%; height: 100%; object-fit: contain; }
+.look .why { color: var(--muted); font-size: .92rem; }
+.look .tip { font-size: .88rem; border-left: 2px solid var(--accent); padding-left: 10px; }
+.look .acts { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 2px; }
+.look ul.names { margin: 0; padding-left: 18px; font-size: .88rem; }
+
+.thinking { display: flex; gap: 10px; align-items: center; color: var(--muted); }
+.spin { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--line); border-top-color: var(--accent); animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .spin { animation-duration: 3s; } }
+.msg { font-size: .92rem; } .msg.err { color: var(--err); } .msg.ok { color: var(--ok); }
+
+.split { display: grid; gap: 20px; grid-template-columns: minmax(0, 340px) minmax(0, 1fr); align-items: start; }
+@media (max-width: 760px) { .split { grid-template-columns: minmax(0, 1fr); } }
+.preview { border-radius: var(--r); overflow: hidden; background: var(--sunk); aspect-ratio: 4 / 5; display: grid; place-items: center; color: var(--muted); text-align: center; padding: 0; position: relative; }
+.preview img { width: 100%; height: 100%; object-fit: cover; }
+.preview .file-btn { position: absolute; inset: 0; border-radius: 0; background: transparent; border: 0; }
+
+table.match { width: 100%; border-collapse: collapse; font-size: .9rem; }
+table.match td { padding: 8px 6px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+table.match td.th { width: 52px; }
+table.match img { width: 44px; height: 44px; object-fit: contain; background: var(--sunk); border-radius: 6px; display: block; }
+.pill { display: inline-block; font-family: var(--f-mono); font-size: .68rem; letter-spacing: .05em; text-transform: uppercase; padding: 2px 7px; border-radius: 999px; background: var(--sunk); color: var(--muted); white-space: nowrap; }
+.pill.ok { background: color-mix(in srgb, var(--ok) 16%, transparent); color: var(--ok); }
+.pill.warn { background: color-mix(in srgb, var(--warn) 16%, transparent); color: var(--warn); }
+
+/* trips */
+.check { display: flex; gap: 10px; align-items: center; padding: 7px 0; border-bottom: 1px solid var(--line); }
+.check img { width: 40px; height: 40px; object-fit: contain; background: var(--sunk); border-radius: 6px; }
+.check input { width: 18px; height: 18px; accent-color: var(--accent); flex: none; }
+.check label { flex: 1; min-width: 0; cursor: pointer; }
+.check.done label { color: var(--muted); text-decoration: line-through; }
+.meter { height: 6px; background: var(--sunk); border-radius: 999px; overflow: hidden; }
+.meter i { display: block; height: 100%; background: var(--accent); }
+.trip-card { text-align: left; cursor: pointer; border: 1px solid var(--line); background: var(--surface); border-radius: var(--r); padding: 14px; display: grid; gap: 8px; }
+.trip-card:hover { border-color: var(--muted); }
+.cols2 { display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); align-items: start; }
+
+/* dialog */
+dialog { border: 0; border-radius: 14px; padding: 0; width: min(560px, calc(100vw - 24px)); max-height: calc(100dvh - 24px); background: var(--surface); color: var(--ink); box-shadow: 0 20px 60px rgba(0,0,0,.3); }
+dialog::backdrop { background: rgba(10, 12, 20, .5); }
+dialog form { display: grid; gap: 12px; padding: 18px; }
+.dlg-ph { background: var(--sunk); border-radius: 10px; height: 240px; display: grid; place-items: center; overflow: hidden; }
+.dlg-ph img { max-height: 240px; object-fit: contain; }
+.seasons { display: flex; gap: 14px; flex-wrap: wrap; font-weight: 400; }
+.seasons label { display: flex; gap: 6px; align-items: center; }
+.dlg-acts { display: flex; gap: 8px; flex-wrap: wrap; justify-content: space-between; }
+
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 999px; font-size: .9rem; z-index: 20; max-width: calc(100vw - 32px); }
+footer { color: var(--muted); font-size: .82rem; padding-block: 0 32px; }
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <div class="brand"><h1>Closet Virtual</h1><span id="count-badge">—</span></div>
+    <nav class="tabs" aria-label="Seções">
+      <a href="#armario" data-tab="armario">Armário</a>
+      <a href="#looks" data-tab="looks">Looks</a>
+      <a href="#inspiracao" data-tab="inspiracao">Inspiração</a>
+      <a href="#mala" data-tab="mala">Mala</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <div id="env-banner" class="banner" hidden></div>
+
+  <!-- ARMÁRIO -->
+  <section class="view" id="v-armario" data-view="armario">
+    <div class="head">
+      <h2>Seu armário</h2>
+      <p class="lede">Suba fotos das suas peças. O Claude identifica cada uma, dá nome, cor, tecido e ocasião, e guarda aqui pra você consultar quando quiser, inclusive na loja.</p>
+    </div>
+    <div class="toolbar">
+      <label class="btn primary file-btn">Adicionar peças
+        <input type="file" id="add-files" accept="image/*" multiple>
+      </label>
+      <label class="btn file-btn">Estou numa loja
+        <input type="file" id="shop-file" accept="image/*">
+      </label>
+      <input type="search" id="q" class="search" placeholder="Buscar: preto, linho, vestido, Zara…" aria-label="Buscar peças">
+    </div>
+    <div id="queue" class="queue" hidden></div>
+    <div id="shop-out" hidden></div>
+    <div class="chips" id="cat-chips"></div>
+    <div id="closet"></div>
+  </section>
+
+  <!-- LOOKS -->
+  <section class="view" id="v-looks" data-view="looks" hidden>
+    <div class="head">
+      <h2>Pedir um look</h2>
+      <p class="lede">Diga a ocasião, o clima e como você quer se sentir. O Claude monta combinações só com o que você tem.</p>
+    </div>
+    <div class="panel">
+      <label class="field">O que você precisa?
+        <textarea id="look-req" placeholder="Ex.: jantar de sexta num restaurante, vai esfriar à noite, quero algo elegante mas confortável"></textarea>
+      </label>
+      <div class="chips" id="look-presets"></div>
+      <div class="row">
+        <label class="field">Usar esta peça <small>(opcional)</small>
+          <select id="look-anchor"><option value="">Qualquer peça</option></select>
+        </label>
+        <label class="field">Quantos looks
+          <select id="look-n"><option>2</option><option selected>3</option><option>4</option></select>
+        </label>
+      </div>
+      <div class="toolbar"><button class="btn primary" id="look-go">Montar looks</button><button class="btn ghost" id="look-stop" hidden>Parar</button></div>
+      <div id="look-status"></div>
+    </div>
+    <div id="look-out" class="looks"></div>
+    <div class="head"><h2>Looks salvos</h2></div>
+    <div class="chips" id="saved-filter"></div>
+    <div id="saved-looks" class="looks"></div>
+  </section>
+
+  <!-- INSPIRAÇÃO -->
+  <section class="view" id="v-inspiracao" data-view="inspiracao" hidden>
+    <div class="head">
+      <h2>Inspiração</h2>
+      <p class="lede">Viu um look no Instagram ou no Pinterest? Suba o print. O Claude descreve o look, procura as peças equivalentes no seu armário e diz o que falta.</p>
+    </div>
+    <div class="split">
+      <div style="display:grid;gap:12px">
+        <div class="preview" id="insp-preview">
+          <span>Toque para escolher<br>a foto de inspiração</span>
+          <label class="btn file-btn" aria-label="Escolher foto de inspiração"><input type="file" id="insp-file" accept="image/*"></label>
+        </div>
+        <label class="field">Algum ajuste? <small>(opcional)</small>
+          <input type="text" id="insp-note" placeholder="Ex.: versão para o trabalho, sem salto">
+        </label>
+        <div class="toolbar"><button class="btn primary" id="insp-go" disabled>Montar com minhas peças</button><button class="btn ghost" id="insp-stop" hidden>Parar</button></div>
+        <div id="insp-status"></div>
+      </div>
+      <div id="insp-out" style="display:grid;gap:16px;min-width:0">
+        <div class="empty">
+          <h3>Como funciona</h3>
+          <ol>
+            <li>Salve o print do look que você gostou.</li>
+            <li>Escolha a foto aqui ao lado.</li>
+            <li>Veja <strong>o equivalente no seu armário</strong> de cada peça, os looks montados e o que valeria comprar.</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MALA -->
+  <section class="view" id="v-mala" data-view="mala" hidden>
+    <div class="head">
+      <h2>Montar mala</h2>
+      <p class="lede">Conte da viagem. O Claude escolhe poucas peças que rendem muitos looks e monta um checklist pra você ir marcando.</p>
+    </div>
+    <div id="trip-detail" hidden></div>
+    <div id="trip-form-wrap" class="cols2">
+      <div class="panel">
+        <div class="row">
+          <label class="field">Destino<input type="text" id="t-dest" placeholder="Ex.: Lisboa"></label>
+          <label class="field">Dias<input type="number" id="t-days" min="1" max="60" value="5"></label>
+        </div>
+        <div class="row">
+          <label class="field">Clima
+            <select id="t-clima"><option>Calor</option><option selected>Ameno</option><option>Frio</option><option>Muda muito</option></select>
+          </label>
+          <label class="field">Bagagem
+            <select id="t-bag"><option>Só mala de mão</option><option selected>Mala média</option><option>Mala grande</option></select>
+          </label>
+        </div>
+        <label class="field">Programação<input type="text" id="t-occ" placeholder="Ex.: passeios a pé, 1 jantar especial, 1 dia de praia"></label>
+        <label class="field">Observações <small>(opcional)</small><input type="text" id="t-notes" placeholder="Ex.: quero levar o vestido verde, nada de salto"></label>
+        <div class="toolbar"><button class="btn primary" id="trip-go">Montar mala</button><button class="btn ghost" id="trip-stop" hidden>Parar</button></div>
+        <div id="trip-status"></div>
+      </div>
+      <div style="display:grid;gap:12px;min-width:0">
+        <h3>Malas salvas</h3>
+        <div id="trip-list" style="display:grid;gap:10px"></div>
+      </div>
+    </div>
+  </section>
+</main>
+<footer class="wrap" id="foot">Fotos e catálogo ficam guardados nesta página, só para você.</footer>
+
+<dialog id="piece-dlg">
+  <form id="piece-form" method="dialog">
+    <div class="dlg-ph"><img id="pf-img" alt=""></div>
+    <label class="field">Nome<input type="text" id="pf-name" required></label>
+    <div class="row">
+      <label class="field">Categoria<select id="pf-cat"></select></label>
+      <label class="field">Formalidade <small id="pf-form-lbl"></small><input type="range" id="pf-form" min="1" max="5" step="1"></label>
+    </div>
+    <div class="row">
+      <label class="field">Cores <small>separe por vírgula</small><input type="text" id="pf-colors"></label>
+      <label class="field">Estampa<input type="text" id="pf-pattern"></label>
+    </div>
+    <div class="row">
+      <label class="field">Tecido<input type="text" id="pf-fabric"></label>
+      <label class="field">Marca<input type="text" id="pf-brand"></label>
+    </div>
+    <label class="field">Estilo <small>separe por vírgula</small><input type="text" id="pf-style"></label>
+    <div class="field">Estações
+      <div class="seasons">
+        <label><input type="checkbox" id="pf-s-verao" value="verão"> Verão</label>
+        <label><input type="checkbox" id="pf-s-meia" value="meia-estação"> Meia-estação</label>
+        <label><input type="checkbox" id="pf-s-inverno" value="inverno"> Inverno</label>
+      </div>
+    </div>
+    <label class="field">Notas<input type="text" id="pf-notes" placeholder="Ex.: ficou curta, precisa de ajuste"></label>
+    <label class="seasons" style="font-size:.9rem"><span style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="pf-avail"> Disponível para looks</span><span style="display:flex;gap:6px;align-items:center" id="pf-orig-wrap"><input type="checkbox" id="pf-orig"> Mostrar foto original</span></label>
+    <div class="dlg-acts">
+      <button type="button" class="btn danger" id="pf-del">Excluir peça</button>
+      <span style="display:flex;gap:8px"><button type="button" class="btn ghost" id="pf-cancel">Fechar</button><button type="submit" class="btn primary" id="pf-save">Salvar</button></span>
+    </div>
+  </form>
+</dialog>
+
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(() => {
+"use strict";
+
+// ---------- constants ----------
+const CATS = [
+  ["top", "Blusas e camisas"], ["malha", "Malhas e tricôs"], ["casaco", "Casacos e blazers"],
+  ["calca", "Calças"], ["saia", "Saias"], ["short", "Shorts e bermudas"], ["vestido", "Vestidos e macacões"],
+  ["sapato", "Sapatos"], ["bolsa", "Bolsas"], ["acessorio", "Acessórios"], ["praia", "Praia e academia"], ["outro", "Outros"]
+];
+const CAT_LABEL = Object.fromEntries(CATS);
+const CAT_SHORT = { top: "blusa", malha: "malha", casaco: "casaco", calca: "calça", saia: "saia", short: "short", vestido: "vestido", sapato: "sapato", bolsa: "bolsa", acessorio: "acessório", praia: "praia", outro: "outro" };
+const FORM_LABEL = ["", "Casa", "Casual", "Smart casual", "Social", "Festa"];
+const SEASON_SHORT = { "verão": "VER", "meia-estação": "MEIA", "inverno": "INV" };
+const PRESETS = ["Trabalho, dia normal", "Reunião importante", "Jantar a dois", "Fim de semana casual", "Casamento de dia", "Dia frio e chuvoso", "Festa à noite", "Viagem de avião"];
+
+const S = {
+  db: null, assets: null, sample: null, imagesOK: false,
+  pieces: [], looks: [], trips: [], byId: {},
+  loaded: { pieces: false, looks: false, trips: false },
+  filter: { q: "", cat: "todas" }, savedFilter: "todos",
+  editing: null, openTrip: null,
+  insp: { file: null, blob: null, result: null },
+};
+
+// ---------- helpers ----------
+const $ = (s) => document.querySelector(s);
+function h(tag, props, ...kids) {
+  const el = document.createElement(tag);
+  for (const [k, v] of Object.entries(props || {})) {
+    if (v == null || v === false) continue;
+    if (k === "class") el.className = v;
+    else if (k === "text") el.textContent = v;
+    else if (k.startsWith("on")) el.addEventListener(k.slice(2), v);
+    else el.setAttribute(k, v === true ? "" : v);
+  }
+  for (const c of kids.flat(Infinity)) {
+    if (c == null || c === false) continue;
+    el.append(c.nodeType ? c : document.createTextNode(String(c)));
+  }
+  return el;
+}
+const imgSrc = (id) => id ? "/_blob/" + id : "";
+const asList = (v) => Array.isArray(v) ? v.map(String).map(s => s.trim()).filter(Boolean) : (typeof v === "string" && v.trim() ? v.split(",").map(s => s.trim()).filter(Boolean) : []);
+const clampForm = (n) => Math.min(5, Math.max(1, Math.round(Number(n) || 3)));
+let toastT;
+function toast(text) {
+  const t = $("#toast"); t.textContent = text; t.hidden = false;
+  clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, 3200);
+}
+function errText(e) {
+  const c = e && e.code;
+  const map = {
+    not_granted: "Você não permitiu que esta página use o Claude. Recarregue a página e toque em Permitir.",
+    rate_limited: "Muitos pedidos seguidos. Espere um minuto e tente de novo.",
+    invalid_json: "A resposta veio num formato inesperado. Tente de novo.",
+    images_unavailable: "Esta visualização não consegue enviar fotos ao Claude. Abra a página no claude.ai.",
+    image_rejected: "Não consegui ler essa imagem. Tente uma foto JPG ou PNG.",
+    prompt_too_large: "O armário ficou grande demais para um pedido só. Marque algumas peças como indisponíveis e tente de novo.",
+    sampling_disabled: "O uso do Claude está desativado nesta conta.",
+    session_expired: "Sua sessão expirou. Recarregue a página.",
+    refused: "O Claude não quis responder a esse pedido. Tente descrever de outro jeito.",
+    cancelled: "Parado.",
+    store_unavailable: "Não consegui salvar agora. Tente de novo em instantes.",
+    quota_exceeded: "O espaço de fotos desta página acabou. Exclua peças que não usa mais.",
+    not_granted_assets: "Só quem edita esta página pode adicionar fotos.",
+  };
+  return map[c] || (e && e.message) || "Algo deu errado. Tente de novo.";
+}
+function thinking(el, text) { el.replaceChildren(h("div", { class: "thinking" }, h("span", { class: "spin" }), text)); }
+function say(el, text, kind) { el.replaceChildren(h("p", { class: "msg " + (kind || "") }, text)); }
+
+function loadImage(file) {
+  return new Promise((res, rej) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => res(img);
+    img.onerror = () => { URL.revokeObjectURL(url); rej({ code: "image_rejected" }); };
+    img.src = url;
+  });
+}
+// box = [x0,y0,x1,y1] in 0..1
+function toJpeg(img, maxSide, box, q) {
+  const W = img.naturalWidth, H = img.naturalHeight;
+  let sx = 0, sy = 0, sw = W, sh = H;
+  if (box) {
+    const pad = 0.04;
+    const x0 = Math.max(0, box[0] - pad), y0 = Math.max(0, box[1] - pad);
+    const x1 = Math.min(1, box[2] + pad), y1 = Math.min(1, box[3] + pad);
+    sx = x0 * W; sy = y0 * H; sw = (x1 - x0) * W; sh = (y1 - y0) * H;
+  }
+  const scale = Math.min(1, maxSide / Math.max(sw, sh));
+  const c = document.createElement("canvas");
+  c.width = Math.max(1, Math.round(sw * scale)); c.height = Math.max(1, Math.round(sh * scale));
+  const ctx = c.getContext("2d");
+  ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, c.width, c.height);
+  ctx.drawImage(img, sx, sy, sw, sh, 0, 0, c.width, c.height);
+  return new Promise((res, rej) => c.toBlob(b => b ? res(b) : rej({ code: "image_rejected" }), "image/jpeg", q || 0.85));
+}
+function normBox(b) {
+  if (!Array.isArray(b) || b.length !== 4) return null;
+  let [x0, y0, x1, y1] = b.map(Number);
+  if ([x0, y0, x1, y1].some(n => !isFinite(n))) return null;
+  if (Math.max(x0, y0, x1, y1) > 1.5) return null; // not fractions
+  if (x1 < x0) [x0, x1] = [x1, x0];
+  if (y1 < y0) [y0, y1] = [y1, y0];
+  x0 = Math.max(0, x0); y0 = Math.max(0, y0); x1 = Math.min(1, x1); y1 = Math.min(1, y1);
+  if ((x1 - x0) < 0.05 || (y1 - y0) < 0.05) return null;
+  return [x0, y0, x1, y1];
+}
+
+// ---------- catalog text for prompts ----------
+function catalogText(opts) {
+  const list = S.pieces.filter(p => opts && opts.all ? true : p.available !== false);
+  return list.map(p => [
+    p.id, CAT_SHORT[p.cat] || p.cat, p.name,
+    (p.colors || []).join("/"), p.pattern && p.pattern !== "lisa" ? p.pattern : "", p.fabric,
+    (p.seasons || []).join("/"), "formalidade " + (p.formality || 3), (p.style || []).join("/"), p.brand, p.notes
+  ].filter(Boolean).join(" | ")).join("\n");
+}
+const CATALOG_HEAD = "Guarda-roupa (uma peça por linha: id | tipo | nome | cores | estampa | tecido | estações | formalidade 1-5 | estilo | marca | notas):";
+const validIds = (ids) => asList(ids).filter(id => S.byId[id]);
+
+// ---------- sample wrapper ----------
+async function ask(prompt, opts, ui) {
+  if (!S.sample) throw { code: "unavailable", message: "O assistente funciona quando a página está aberta no claude.ai." };
+  const ctl = new AbortController();
+  if (ui && ui.stop) { ui.stop.hidden = false; ui.stop.onclick = () => ctl.abort(); }
+  if (ui && ui.go) ui.go.disabled = true;
+  try {
+    return await S.sample.json(prompt, Object.assign({ signal: ctl.signal }, opts || {}));
+  } finally {
+    if (ui && ui.stop) ui.stop.hidden = true;
+    if (ui && ui.go) ui.go.disabled = false;
+  }
+}
+
+// ---------- routing ----------
+const TABS = ["armario", "looks", "inspiracao", "mala"];
+function route() {
+  const t = TABS.includes(location.hash.slice(1)) ? location.hash.slice(1) : "armario";
+  document.querySelectorAll("[data-view]").forEach(v => { v.hidden = v.dataset.view !== t; });
+  document.querySelectorAll("nav.tabs a").forEach(a => { if (a.dataset.tab === t) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
+}
+window.addEventListener("hashchange", route);
+
+// ---------- ARMÁRIO ----------
+function pieceCard(p) {
+  const seasons = (p.seasons || []).map(s => SEASON_SHORT[s] || s).join("/");
+  const f = clampForm(p.formality);
+  return h("button", { class: "piece" + (p.available === false ? " off" : ""), onclick: () => openPiece(p.id), "aria-label": "Editar " + (p.name || "peça") },
+    h("div", { class: "ph" }, h("img", { src: imgSrc(p.showOriginal && p.src ? p.src : p.photo), alt: p.name || "", loading: "lazy" })),
+    p.available === false ? h("span", { class: "flag mono" }, "fora de uso") : null,
+    h("div", { class: "tag" },
+      h("div", { class: "nm" }, p.name || "Sem nome"),
+      h("div", { class: "mono" }, [CAT_SHORT[p.cat] || "peça", seasons].filter(Boolean).join(" · "), " ",
+        h("span", { class: "dots", title: "Formalidade " + f + " de 5" }, [1, 2, 3, 4, 5].map(i => h("i", { class: i <= f ? "on" : "" }))))
+    )
+  );
+}
+function matchesQ(p, q) {
+  if (!q) return true;
+  const hay = [p.name, CAT_LABEL[p.cat], CAT_SHORT[p.cat], ...(p.colors || []), p.pattern, p.fabric, p.brand, p.notes, ...(p.style || []), ...(p.seasons || [])].join(" ").toLowerCase()
+    .normalize("NFD").replace(/[̀-ͯ]/g, "");
+  return q.split(/\s+/).every(w => hay.includes(w));
+}
+function renderCloset() {
+  const out = $("#closet");
+  const n = S.pieces.length;
+  $("#count-badge").textContent = S.loaded.pieces ? n + (n === 1 ? " peça" : " peças") : "—";
+  // chips
+  const counts = {}; S.pieces.forEach(p => { counts[p.cat] = (counts[p.cat] || 0) + 1; });
+  const chips = $("#cat-chips"); chips.replaceChildren();
+  if (n) {
+    const mk = (key, label, c) => h("button", { class: "chip", "aria-pressed": String(S.filter.cat === key), onclick: () => { S.filter.cat = key; renderCloset(); } }, label, h("b", {}, c));
+    chips.append(mk("todas", "Todas", n));
+    CATS.forEach(([k, l]) => { if (counts[k]) chips.append(mk(k, l, counts[k])); });
+  }
+  if (!S.loaded.pieces) {
+    if (!S.db) { out.replaceChildren(emptyCloset()); return; }
+    thinking(out, "Carregando seu armário…"); return;
+  }
+  if (!n) { out.replaceChildren(emptyCloset()); return; }
+  const q = S.filter.q.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").trim();
+  const list = S.pieces.filter(p => (S.filter.cat === "todas" || p.cat === S.filter.cat) && matchesQ(p, q));
+  if (!list.length) { say(out, "Nenhuma peça encontrada com esse filtro."); return; }
+  out.replaceChildren(h("div", { class: "grid" }, list.map(pieceCard)));
+}
+function emptyCloset() {
+  return h("div", { class: "empty" },
+    h("h3", {}, "Seu armário ainda está vazio"),
+    h("ol", {},
+      h("li", {}, h("strong", {}, "No Google Fotos"), ", abra o guarda-roupa (ou um álbum com suas peças), selecione as fotos e toque em ", h("strong", {}, "Baixar"), "."),
+      h("li", {}, "Aqui, toque em ", h("strong", {}, "Adicionar peças"), " e escolha várias fotos de uma vez."),
+      h("li", {}, "O Claude identifica cada peça, inclusive quando a foto mostra um look inteiro, e cria a ficha. Toque numa peça para corrigir o que quiser.")
+    ),
+    h("p", { class: "lede" }, "Fotos com a peça inteira, bem iluminada e com fundo liso dão os melhores resultados.")
+  );
+}
+
+const CLASSIFY_PROMPT = `Você está catalogando o guarda-roupa de uma pessoa. A imagem é uma foto de roupa: pode ser uma peça sozinha (em cabide, cama, chão, manequim) ou uma pessoa usando um look.
+Identifique cada peça de roupa, calçado, bolsa ou acessório marcante que esteja bem visível. Ignore rostos, móveis e objetos que não são roupa. Se a foto mostra uma única peça, retorne só ela. Não invente peças que não aparecem.
+Para cada peça, em português do Brasil:
+- nome: nome curto e específico que a pessoa reconheceria, ex.: "Camisa de linho branca", "Calça wide leg jeans escuro"
+- categoria: exatamente uma destas: top, malha, casaco, calca, saia, short, vestido, sapato, bolsa, acessorio, praia, outro
+- cores: 1 a 3 cores em português, a principal primeiro
+- estampa: "lisa" ou o nome da estampa (listrada, xadrez, floral, animal print…)
+- tecido: tecido aparente, ou "" se não der para saber
+- estacoes: subconjunto de ["verão","meia-estação","inverno"]
+- formalidade: número de 1 (casa/academia) a 5 (festa/black tie)
+- estilo: até 3 palavras, ex.: "básico", "romântico", "alfaiataria", "esportivo", "boho"
+- caixa: [x0, y0, x1, y1], o retângulo que contém a peça, em frações de 0 a 1 da largura e da altura da imagem, origem no canto superior esquerdo
+Responda só com JSON neste formato:
+{"pecas":[{"nome":"Calça wide leg jeans escuro","categoria":"calca","cores":["azul-escuro"],"estampa":"lisa","tecido":"jeans","estacoes":["meia-estação","inverno"],"formalidade":2,"estilo":["básico"],"caixa":[0.2,0.45,0.8,0.98]}]}`;
+
+function pieceFromAI(p, photo, src) {
+  const cat = CAT_LABEL[p.categoria] ? p.categoria : "outro";
+  return {
+    name: String(p.nome || "Peça").slice(0, 80), cat,
+    colors: asList(p.cores).slice(0, 3), pattern: String(p.estampa || "lisa"), fabric: String(p.tecido || ""),
+    seasons: asList(p.estacoes).filter(s => SEASON_SHORT[s]), formality: clampForm(p.formalidade),
+    style: asList(p.estilo).slice(0, 3), brand: "", notes: "", available: true,
+    photo, src, createdAt: Date.now()
+  };
+}
+
+async function addFiles(files) {
+  if (!files.length) return;
+  if (!S.db || !S.assets) { toast(S.db ? errText({ code: "not_granted_assets" }) : "Abra esta página no claude.ai para salvar peças."); return; }
+  if (!S.sample || !S.imagesOK) { toast("O Claude precisa ver as fotos. Abra a página no claude.ai."); return; }
+  const q = $("#queue"); q.hidden = false;
+  const jobs = [...files].map(file => {
+    const st = h("span", { class: "st" }, "Na fila");
+    const row = h("div", { class: "qrow" }, h("span", { class: "fn" }, file.name || "foto"), st);
+    q.prepend(row);
+    return { file, st };
+  });
+  let i = 0;
+  const worker = async () => { while (i < jobs.length) await processFile(jobs[i++]); };
+  await Promise.all([worker(), worker()]);
+  setTimeout(() => { if (![...q.querySelectorAll(".st")].some(s => !s.classList.contains("ok") && !s.classList.contains("warn") && !s.classList.contains("err"))) { q.querySelectorAll(".qrow").forEach(r => { if (r.querySelector(".st.ok")) r.remove(); }); if (!q.children.length) q.hidden = true; } }, 6000);
+}
+async function processFile({ file, st }) {
+  const set = (t, k) => { st.textContent = t; st.className = "st " + (k || ""); };
+  try {
+    set("Lendo foto…");
+    const img = await loadImage(file);
+    const full = await toJpeg(img, 1280, null, 0.82);
+    set("Identificando peças…");
+    const res = await S.sample.json(CLASSIFY_PROMPT, { images: [full] });
+    const found = (res && Array.isArray(res.pecas) ? res.pecas : []).filter(p => p && p.nome).slice(0, 8);
+    if (!found.length) { set("Nenhuma peça encontrada", "warn"); return; }
+    set("Salvando…");
+    const src = await S.assets.upload(full, { type: "image/jpeg" });
+    for (const p of found) {
+      const box = normBox(p.caixa);
+      let photo = src.id;
+      if (box && (found.length > 1 || (box[2] - box[0]) * (box[3] - box[1]) < 0.7)) {
+        const crop = await toJpeg(img, 720, box, 0.85);
+        photo = (await S.assets.upload(crop, { type: "image/jpeg" })).id;
+      }
+      await S.db.collection("pieces").add(pieceFromAI(p, photo, src.id));
+    }
+    set(found.length === 1 ? "1 peça adicionada" : found.length + " peças adicionadas", "ok");
+  } catch (e) {
+    set(errText(e), "err");
+  }
+}
+
+// piece dialog
+function openPiece(id) {
+  const p = S.byId[id]; if (!p) return;
+  S.editing = id;
+  const dlg = $("#piece-dlg");
+  $("#pf-img").src = imgSrc(p.showOriginal && p.src ? p.src : p.photo);
+  $("#pf-name").value = p.name || "";
+  $("#pf-cat").value = p.cat || "outro";
+  $("#pf-form").value = clampForm(p.formality); $("#pf-form-lbl").textContent = FORM_LABEL[clampForm(p.formality)];
+  $("#pf-colors").value = (p.colors || []).join(", ");
+  $("#pf-pattern").value = p.pattern || "";
+  $("#pf-fabric").value = p.fabric || "";
+  $("#pf-brand").value = p.brand || "";
+  $("#pf-style").value = (p.style || []).join(", ");
+  $("#pf-notes").value = p.notes || "";
+  $("#pf-s-verao").checked = (p.seasons || []).includes("verão");
+  $("#pf-s-meia").checked = (p.seasons || []).includes("meia-estação");
+  $("#pf-s-inverno").checked = (p.seasons || []).includes("inverno");
+  $("#pf-avail").checked = p.available !== false;
+  $("#pf-orig-wrap").hidden = !p.src || p.src === p.photo;
+  $("#pf-orig").checked = !!p.showOriginal;
+  const del = $("#pf-del"); del.textContent = "Excluir peça"; del.dataset.armed = "";
+  if (dlg.showModal) dlg.showModal(); else dlg.setAttribute("open", "");
+}
+function closePiece() { const d = $("#piece-dlg"); if (d.close) d.close(); else d.removeAttribute("open"); S.editing = null; }
+async function savePiece(ev) {
+  ev.preventDefault();
+  const id = S.editing; if (!id || !S.db) return closePiece();
+  const seasons = ["#pf-s-verao", "#pf-s-meia", "#pf-s-inverno"].filter(s => $(s).checked).map(s => $(s).value);
+  const data = {
+    name: $("#pf-name").value.trim() || "Peça", cat: $("#pf-cat").value, formality: clampForm($("#pf-form").value),
+    colors: asList($("#pf-colors").value), pattern: $("#pf-pattern").value.trim(), fabric: $("#pf-fabric").value.trim(),
+    brand: $("#pf-brand").value.trim(), style: asList($("#pf-style").value), notes: $("#pf-notes").value.trim(),
+    seasons, available: $("#pf-avail").checked, showOriginal: $("#pf-orig").checked
+  };
+  try { await S.db.collection("pieces").doc(id).update(data); toast("Peça salva"); closePiece(); }
+  catch (e) { toast(errText(e)); }
+}
+async function deletePiece() {
+  const btn = $("#pf-del");
+  if (!btn.dataset.armed) { btn.dataset.armed = "1"; btn.textContent = "Toque de novo para excluir"; return; }
+  const p = S.byId[S.editing]; if (!p || !S.db) return;
+  try {
+    await S.db.collection("pieces").doc(p.id).delete();
+    const others = S.pieces.filter(x => x.id !== p.id);
+    for (const a of new Set([p.photo, p.src].filter(Boolean))) {
+      if (!others.some(x => x.photo === a || x.src === a) && S.assets) { try { await S.assets.delete(a); } catch (_) {} }
+    }
+    toast("Peça excluída"); closePiece();
+  } catch (e) { toast(errText(e)); }
+}
+
+// shop mode
+const SHOP_PROMPT = (cat) => `Estou numa loja pensando em comprar a peça da foto. Compare com meu guarda-roupa e me ajude a decidir.
+${CATALOG_HEAD}
+${cat}
+
+Responda em português do Brasil, só com JSON:
+{"item":"descrição curta da peça da foto","parecidas":[{"id":"id de uma peça minha muito parecida","nota":"o que muda"}],"combina_com":["ids de peças minhas que combinam com ela"],"looks_possiveis":3,"veredito":"2 frases diretas: vale a pena ou já tenho algo equivalente?"}
+Use apenas ids que existem na lista. "parecidas" fica vazia se eu não tiver nada parecido.`;
+async function shopCheck(file) {
+  const out = $("#shop-out"); out.hidden = false;
+  const panel = h("div", { class: "panel" }); out.replaceChildren(panel);
+  if (!S.sample || !S.imagesOK) { say(panel, "O Claude precisa ver a foto. Abra a página no claude.ai.", "err"); return; }
+  if (!S.pieces.length) { say(panel, "Cadastre algumas peças primeiro para eu poder comparar.", "err"); return; }
+  thinking(panel, "Comparando com o seu armário…");
+  try {
+    const img = await loadImage(file);
+    const blob = await toJpeg(img, 1280, null, 0.82);
+    const r = await ask(SHOP_PROMPT(catalogText({ all: true })), { images: [blob] });
+    const parecidas = (Array.isArray(r.parecidas) ? r.parecidas : []).filter(x => x && S.byId[x.id]);
+    const combina = validIds(r.combina_com);
+    const thumb = URL.createObjectURL(blob);
+    panel.replaceChildren(
+      h("div", { style: "display:flex;gap:14px;align-items:flex-start" },
+        h("img", { src: thumb, alt: "", style: "width:84px;height:104px;object-fit:cover;border-radius:8px;flex:none" }),
+        h("div", { style: "display:grid;gap:6px;min-width:0" },
+          h("span", { class: "mono" }, "Na loja"),
+          h("h3", {}, r.item || "Peça da foto"),
+          h("p", {}, r.veredito || ""),
+          h("div", { class: "chips" },
+            h("span", { class: "pill " + (parecidas.length ? "warn" : "ok") }, parecidas.length ? "Você já tem algo parecido" : "Nada parecido no armário"),
+            Number(r.looks_possiveis) ? h("span", { class: "pill" }, "≈ " + Number(r.looks_possiveis) + " looks com o que você tem") : null)
+        )
+      ),
+      parecidas.length ? h("div", {}, h("p", { class: "mono", style: "margin-bottom:6px" }, "Parecidas que você tem"),
+        h("table", { class: "match" }, h("tbody", {}, parecidas.map(x => h("tr", {},
+          h("td", { class: "th" }, h("img", { src: imgSrc(S.byId[x.id].photo), alt: "" })),
+          h("td", {}, h("strong", {}, S.byId[x.id].name), h("br"), h("span", { class: "lede" }, x.nota || ""))))))) : null,
+      combina.length ? h("div", {}, h("p", { class: "mono", style: "margin-bottom:6px" }, "Combina com"),
+        h("div", { class: "collage" }, combina.slice(0, 9).map(id => thumbBtn(id)))) : null,
+      h("div", {}, h("button", { class: "btn small ghost", onclick: () => { out.hidden = true; out.replaceChildren(); } }, "Fechar"))
+    );
+  } catch (e) { say(panel, errText(e), "err"); }
+}
+
+// ---------- LOOKS ----------
+function thumbBtn(id) {
+  const p = S.byId[id]; if (!p) return null;
+  return h("button", { type: "button", onclick: () => openPiece(id), title: p.name, "aria-label": p.name }, h("img", { src: imgSrc(p.photo), alt: p.name, loading: "lazy" }));
+}
+function lookCard(look, opts) {
+  const ids = validIds(look.pecas);
+  const missing = asList(look.pecas).length - ids.length;
+  return h("article", { class: "look" },
+    look.inspo ? h("div", { style: "display:flex;gap:10px;align-items:center" }, h("img", { src: imgSrc(look.inspo), alt: "Inspiração", style: "width:44px;height:56px;object-fit:cover;border-radius:6px" }), h("span", { class: "mono" }, "a partir de uma inspiração")) : null,
+    h("div", { class: "collage n" + Math.min(ids.length, 6) }, ids.map(thumbBtn)),
+    h("h3", {}, look.titulo || "Look"),
+    h("ul", { class: "names" }, ids.map(id => h("li", {}, S.byId[id].name))),
+    look.porque ? h("p", { class: "why" }, look.porque) : null,
+    look.dica ? h("p", { class: "tip" }, look.dica) : null,
+    missing > 0 ? h("p", { class: "mono" }, missing === 1 ? "1 peça foi excluída do armário" : missing + " peças foram excluídas do armário") : null,
+    h("div", { class: "acts" }, opts && opts.actions)
+  );
+}
+const LOOKS_PROMPT = ({ req, anchor, n, cat }) => `Você é uma stylist pessoal. Monte ${n} looks diferentes entre si usando SOMENTE peças do guarda-roupa abaixo, citando os ids exatos.
+Pedido: ${req || "looks bonitos para o dia a dia"}
+${anchor ? "Todos os looks devem incluir a peça de id " + anchor + "." : ""}
+
+${CATALOG_HEAD}
+${cat}
+
+Regras:
+- Cada look precisa ser vestível: parte de cima + parte de baixo, ou um vestido/macacão; inclua sapato quando houver no armário; casaco, bolsa e acessório quando fizer sentido.
+- Nunca duas peças que ocupam o mesmo lugar (duas calças, dois sapatos).
+- Respeite clima, ocasião e formalidade do pedido.
+- Escreva em português do Brasil, tom direto e caloroso.
+Responda só com JSON: {"looks":[{"titulo":"nome curto do look","pecas":["id1","id2","id3"],"porque":"1 ou 2 frases sobre por que funciona","dica":"uma dica curta de styling (dobrar a manga, cinto, cabelo…)"}]}`;
+async function genLooks() {
+  const status = $("#look-status"), out = $("#look-out");
+  if (S.pieces.filter(p => p.available !== false).length < 2) { say(status, "Cadastre pelo menos algumas peças no Armário antes de pedir looks.", "err"); return; }
+  thinking(status, "Montando looks com as suas peças…");
+  out.replaceChildren();
+  const req = $("#look-req").value.trim();
+  try {
+    const r = await ask(LOOKS_PROMPT({ req, anchor: $("#look-anchor").value, n: $("#look-n").value, cat: catalogText() }), {}, { go: $("#look-go"), stop: $("#look-stop") });
+    const looks = (r && Array.isArray(r.looks) ? r.looks : []).filter(l => validIds(l.pecas).length);
+    if (!looks.length) { say(status, "Não consegui montar looks com esse pedido. Tente descrever de outro jeito.", "err"); return; }
+    status.replaceChildren();
+    out.replaceChildren(...looks.map(l => {
+      const look = { titulo: l.titulo, pecas: validIds(l.pecas), porque: l.porque, dica: l.dica, origem: "pedido", pedido: req };
+      return lookCard(look, { actions: [saveLookBtn(look)] });
+    }));
+  } catch (e) { say(status, errText(e), e.code === "cancelled" ? "" : "err"); }
+}
+function saveLookBtn(look, beforeSave) {
+  const b = h("button", { class: "btn small primary", onclick: async () => {
+    if (!S.db) { toast("Abra esta página no claude.ai para salvar."); return; }
+    b.disabled = true; b.textContent = "Salvando…";
+    try {
+      const data = Object.assign({}, look, { createdAt: Date.now() });
+      if (beforeSave) Object.assign(data, await beforeSave());
+      await S.db.collection("looks").add(data);
+      b.textContent = "Salvo ✓";
+    } catch (e) { b.disabled = false; b.textContent = "Salvar look"; toast(errText(e)); }
+  } }, "Salvar look");
+  return b;
+}
+function renderSaved() {
+  const out = $("#saved-looks");
+  const f = $("#saved-filter"); f.replaceChildren();
+  const ORIG = [["todos", "Todos"], ["pedido", "Pedidos"], ["inspiracao", "Inspirações"], ["mala", "Malas"]];
+  if (S.looks.length) ORIG.forEach(([k, l]) => {
+    const c = k === "todos" ? S.looks.length : S.looks.filter(x => x.origem === k).length;
+    if (c || k === "todos") f.append(h("button", { class: "chip", "aria-pressed": String(S.savedFilter === k), onclick: () => { S.savedFilter = k; renderSaved(); } }, l, h("b", {}, c)));
+  });
+  if (!S.loaded.looks) { out.replaceChildren(); return; }
+  const list = S.looks.filter(l => S.savedFilter === "todos" || l.origem === S.savedFilter);
+  if (!list.length) { out.replaceChildren(h("p", { class: "lede" }, "Os looks que você salvar aparecem aqui.")); return; }
+  out.replaceChildren(...list.map(l => {
+    const del = h("button", { class: "btn small ghost", onclick: async () => {
+      if (!del.dataset.armed) { del.dataset.armed = "1"; del.textContent = "Confirmar"; return; }
+      try { await S.db.collection("looks").doc(l.id).delete(); if (l.inspo && S.assets && !S.looks.some(x => x.id !== l.id && x.inspo === l.inspo)) { try { await S.assets.delete(l.inspo); } catch (_) {} } } catch (e) { toast(errText(e)); }
+    } }, "Remover");
+    return lookCard(l, { actions: [del] });
+  }));
+}
+function fillAnchor() {
+  const sel = $("#look-anchor"); const cur = sel.value;
+  sel.replaceChildren(h("option", { value: "" }, "Qualquer peça"),
+    ...CATS.map(([k, l]) => {
+      const ps = S.pieces.filter(p => p.cat === k && p.available !== false);
+      return ps.length ? h("optgroup", { label: l }, ps.map(p => h("option", { value: p.id }, p.name))) : null;
+    }).filter(Boolean));
+  sel.value = S.byId[cur] ? cur : "";
+}
+
+// ---------- INSPIRAÇÃO ----------
+const INSP_PROMPT = ({ note, cat }) => `A imagem é uma foto de inspiração: um look usado por uma modelo ou influenciadora. Quero recriar esse look com o que eu tenho.
+1. Descreva o look e liste as peças principais dele.
+2. Para cada peça da foto, indique a peça mais parecida do meu guarda-roupa (ou null se eu não tiver nada que cumpra o mesmo papel).
+3. Monte até 2 versões do look usando SOMENTE peças do meu guarda-roupa, com os ids exatos. Uma versão o mais fiel possível, e outra com uma releitura, se fizer sentido.
+4. Liste o que falta para chegar mais perto do look (no máximo 3 itens), pensando em peças versáteis.
+${note ? "Ajuste pedido: " + note : ""}
+
+${CATALOG_HEAD}
+${cat}
+
+Responda em português do Brasil, só com JSON:
+{"descricao":"a vibe do look em 1 frase","pecas_foto":[{"item":"blazer oversized bege","id":"id da minha peça mais parecida ou null","nota":"o quanto se parece"}],"looks":[{"titulo":"...","pecas":["id1","id2"],"porque":"1 ou 2 frases"}],"faltando":[{"item":"...","porque":"..."}]}`;
+async function pickInsp(file) {
+  if (!file) return;
+  try {
+    const img = await loadImage(file);
+    S.insp.blob = await toJpeg(img, 1280, null, 0.84);
+    const pv = $("#insp-preview");
+    pv.querySelector("span")?.remove();
+    pv.querySelector("img")?.remove();
+    pv.prepend(h("img", { src: URL.createObjectURL(S.insp.blob), alt: "Foto de inspiração" }));
+    $("#insp-go").disabled = false;
+  } catch (e) { toast(errText(e)); }
+}
+async function genInsp() {
+  const status = $("#insp-status"), out = $("#insp-out");
+  if (!S.insp.blob) return;
+  if (!S.sample || !S.imagesOK) { say(status, "O Claude precisa ver a foto. Abra a página no claude.ai.", "err"); return; }
+  if (S.pieces.filter(p => p.available !== false).length < 2) { say(status, "Cadastre algumas peças no Armário primeiro.", "err"); return; }
+  thinking(status, "Analisando a inspiração e procurando no seu armário…");
+  try {
+    const r = await ask(INSP_PROMPT({ note: $("#insp-note").value.trim(), cat: catalogText() }), { images: [S.insp.blob] }, { go: $("#insp-go"), stop: $("#insp-stop") });
+    status.replaceChildren();
+    const blob = S.insp.blob;
+    let inspoId = null;
+    const uploadInspo = async () => {
+      if (!inspoId && S.assets) inspoId = (await S.assets.upload(blob, { type: "image/jpeg" })).id;
+      return inspoId ? { inspo: inspoId } : {};
+    };
+    const pf = Array.isArray(r.pecas_foto) ? r.pecas_foto : [];
+    const looks = (Array.isArray(r.looks) ? r.looks : []).filter(l => validIds(l.pecas).length);
+    const falt = Array.isArray(r.faltando) ? r.faltando : [];
+    out.replaceChildren(
+      h("div", { class: "panel" },
+        h("span", { class: "mono" }, "O look da foto"),
+        h("h3", {}, r.descricao || "Look de inspiração"),
+        pf.length ? h("table", { class: "match" }, h("tbody", {}, pf.map(x => {
+          const p = x && S.byId[x.id];
+          return h("tr", {},
+            h("td", {}, h("strong", {}, x.item || "")),
+            h("td", { class: "th" }, p ? h("img", { src: imgSrc(p.photo), alt: "" }) : null),
+            h("td", {}, p ? [p.name, x.nota ? h("br") : null, x.nota ? h("span", { class: "lede" }, x.nota) : null] : h("span", { class: "pill warn" }, "não tem")));
+        }))) : null
+      ),
+      looks.length ? h("div", { class: "looks" }, looks.map(l => {
+        const look = { titulo: l.titulo, pecas: validIds(l.pecas), porque: l.porque, origem: "inspiracao", pedido: r.descricao || "" };
+        return lookCard(look, { actions: [saveLookBtn(look, uploadInspo)] });
+      })) : h("p", { class: "msg err" }, "Não encontrei peças suficientes no seu armário para recriar esse look."),
+      falt.length ? h("div", { class: "panel" }, h("span", { class: "mono" }, "Para chegar mais perto"),
+        h("ul", { style: "margin:0;padding-left:18px;display:grid;gap:6px" }, falt.map(x => h("li", {}, h("strong", {}, x.item || ""), x.porque ? " · " + x.porque : "")))) : null
+    );
+  } catch (e) { say(status, errText(e), e.code === "cancelled" ? "" : "err"); }
+}
+
+// ---------- MALA ----------
+const TRIP_PROMPT = (t, cat) => `Você é uma stylist montando a mala de uma viagem com peças do meu guarda-roupa.
+Viagem: ${t.destino || "destino não informado"}, ${t.dias} dias, clima: ${t.clima}, bagagem: ${t.bagagem}.
+Programação: ${t.ocasioes || "passeios variados"}.
+${t.obs ? "Observações: " + t.obs : ""}
+
+${CATALOG_HEAD}
+${cat}
+
+Regras:
+- Escolha poucas peças que combinem entre si e rendam muitos looks (cápsula). Ajuste a quantidade ao tamanho da bagagem.
+- Monte um look por dia (ou por ocasião), usando SOMENTE as peças escolhidas e os ids exatos.
+- Em "extras", liste o que não está no catálogo mas eu não posso esquecer (roupa íntima, pijama, itens de clima). No máximo 8.
+Responda em português do Brasil, só com JSON:
+{"resumo":"1 frase sobre a estratégia da mala","pecas":["id1","id2"],"looks":[{"dia":"Dia 1","ocasiao":"passeio","pecas":["id1","id2"]}],"extras":["..."],"dicas":["no máximo 3 dicas curtas"]}`;
+async function genTrip() {
+  const status = $("#trip-status");
+  if (!S.db) { say(status, "Abra esta página no claude.ai para montar e salvar malas.", "err"); return; }
+  if (S.pieces.filter(p => p.available !== false).length < 3) { say(status, "Cadastre mais peças no Armário primeiro.", "err"); return; }
+  const t = { destino: $("#t-dest").value.trim(), dias: Math.max(1, Math.min(60, Number($("#t-days").value) || 3)), clima: $("#t-clima").value, bagagem: $("#t-bag").value, ocasioes: $("#t-occ").value.trim(), obs: $("#t-notes").value.trim() };
+  thinking(status, "Escolhendo as peças e montando os looks da viagem…");
+  try {
+    const r = await ask(TRIP_PROMPT(t, catalogText()), {}, { go: $("#trip-go"), stop: $("#trip-stop") });
+    const looks = (Array.isArray(r.looks) ? r.looks : []).map(l => ({ dia: String(l.dia || ""), ocasiao: String(l.ocasiao || ""), pecas: validIds(l.pecas) })).filter(l => l.pecas.length);
+    const pecas = [...new Set([...validIds(r.pecas), ...looks.flatMap(l => l.pecas)])];
+    if (!pecas.length) { say(status, "Não consegui montar a mala. Tente de novo com mais detalhes.", "err"); return; }
+    const ref = await S.db.collection("trips").add({ ...t, resumo: String(r.resumo || ""), pecas, looks, extras: asList(r.extras).slice(0, 12), dicas: asList(r.dicas).slice(0, 4), checked: {}, createdAt: Date.now() });
+    status.replaceChildren();
+    S.openTrip = ref.id; renderTrips();
+  } catch (e) { say(status, errText(e), e.code === "cancelled" ? "" : "err"); }
+}
+function tripProgress(t) {
+  const keys = [...(t.pecas || []), ...(t.extras || []).map((_, i) => "x" + i)];
+  const done = keys.filter(k => t.checked && t.checked[k]).length;
+  return { done, total: keys.length };
+}
+let tripWrite = Promise.resolve();
+function toggleCheck(t, key, val) {
+  const checked = Object.assign({}, t.checked || {}, { [key]: val });
+  if (!val) delete checked[key];
+  tripWrite = tripWrite.then(() => S.db.collection("trips").doc(t.id).update({ checked })).catch(e => toast(errText(e)));
+}
+function renderTrips() {
+  const list = $("#trip-list"), detail = $("#trip-detail"), form = $("#trip-form-wrap");
+  const t = S.openTrip && S.trips.find(x => x.id === S.openTrip);
+  detail.hidden = !t; form.hidden = !!t;
+  if (t) {
+    const pr = tripProgress(t);
+    const row = (key, label, photo) => {
+      const id = "ck-" + t.id + "-" + key.replace(/[^a-zA-Z0-9_-]/g, "");
+      const on = !!(t.checked && t.checked[key]);
+      return h("div", { class: "check" + (on ? " done" : "") },
+        h("input", { type: "checkbox", id, checked: on, onchange: (e) => toggleCheck(t, key, e.target.checked) }),
+        photo ? h("img", { src: imgSrc(photo), alt: "" }) : null,
+        h("label", { for: id }, label));
+    };
+    const del = h("button", { class: "btn small danger", onclick: async () => {
+      if (!del.dataset.armed) { del.dataset.armed = "1"; del.textContent = "Toque de novo para excluir"; return; }
+      try { await S.db.collection("trips").doc(t.id).delete(); S.openTrip = null; renderTrips(); } catch (e) { toast(errText(e)); }
+    } }, "Excluir mala");
+    detail.replaceChildren(
+      h("div", { class: "toolbar" }, h("button", { class: "btn small", onclick: () => { S.openTrip = null; renderTrips(); } }, "← Todas as malas"), del),
+      h("div", { class: "head" }, h("span", { class: "mono" }, [t.dias + (t.dias == 1 ? " dia" : " dias"), t.clima, t.bagagem].join(" · ")), h("h2", {}, t.destino || "Viagem"), t.resumo ? h("p", { class: "lede" }, t.resumo) : null),
+      h("div", { class: "cols2" },
+        h("div", { class: "panel" },
+          h("div", { style: "display:flex;justify-content:space-between;align-items:baseline" }, h("h3", {}, "Checklist"), h("span", { class: "mono" }, pr.done + "/" + pr.total + " na mala")),
+          h("div", { class: "meter" }, h("i", { style: "width:" + (pr.total ? Math.round(pr.done / pr.total * 100) : 0) + "%" })),
+          h("div", {}, (t.pecas || []).filter(id => S.byId[id]).map(id => row(id, S.byId[id].name, S.byId[id].photo))),
+          (t.extras || []).length ? h("div", {}, h("p", { class: "mono", style: "margin:8px 0 2px" }, "Não esquecer"), t.extras.map((x, i) => row("x" + i, x))) : null,
+          (t.dicas || []).length ? h("ul", { style: "margin:0;padding-left:18px;color:var(--muted);font-size:.9rem" }, t.dicas.map(d => h("li", {}, d))) : null
+        ),
+        h("div", { style: "display:grid;gap:12px;min-width:0" }, h("h3", {}, "Looks da viagem"),
+          h("div", { class: "looks" }, (t.looks || []).map(l => lookCard({ titulo: [l.dia, l.ocasiao].filter(Boolean).join(" · "), pecas: l.pecas })))
+        )
+      )
+    );
+  }
+  if (!S.loaded.trips) { list.replaceChildren(); return; }
+  if (!S.trips.length) { list.replaceChildren(h("p", { class: "lede" }, "Nenhuma mala ainda. Preencha a viagem ao lado e toque em Montar mala.")); return; }
+  list.replaceChildren(...S.trips.map(x => {
+    const pr = tripProgress(x);
+    return h("button", { class: "trip-card", onclick: () => { S.openTrip = x.id; renderTrips(); window.scrollTo(0, 0); } },
+      h("div", { style: "display:flex;justify-content:space-between;gap:8px;align-items:baseline" }, h("strong", {}, x.destino || "Viagem"), h("span", { class: "mono" }, x.dias + "d · " + (x.pecas || []).length + " peças")),
+      h("div", { class: "meter" }, h("i", { style: "width:" + (pr.total ? Math.round(pr.done / pr.total * 100) : 0) + "%" })),
+      h("span", { class: "mono" }, pr.done + "/" + pr.total + " na mala"));
+  }));
+}
+
+// ---------- wiring ----------
+function renderAll() { renderCloset(); fillAnchor(); renderSaved(); renderTrips(); }
+function setup() {
+  $("#pf-cat").replaceChildren(...CATS.map(([k, l]) => h("option", { value: k }, l)));
+  $("#pf-form").addEventListener("input", (e) => { $("#pf-form-lbl").textContent = FORM_LABEL[clampForm(e.target.value)]; });
+  $("#piece-form").addEventListener("submit", savePiece);
+  $("#pf-cancel").addEventListener("click", closePiece);
+  $("#pf-del").addEventListener("click", deletePiece);
+  $("#pf-orig").addEventListener("change", (e) => { const p = S.byId[S.editing]; if (p) $("#pf-img").src = imgSrc(e.target.checked && p.src ? p.src : p.photo); });
+  $("#add-files").addEventListener("change", (e) => { const f = [...e.target.files]; e.target.value = ""; addFiles(f); });
+  $("#shop-file").addEventListener("change", (e) => { const f = e.target.files[0]; e.target.value = ""; if (f) shopCheck(f); });
+  $("#q").addEventListener("input", (e) => { S.filter.q = e.target.value; renderCloset(); });
+  $("#look-presets").replaceChildren(...PRESETS.map(p => h("button", { class: "chip", type: "button", onclick: () => { const ta = $("#look-req"); ta.value = ta.value.trim() ? ta.value.trim() + ". " + p : p; ta.focus(); } }, p)));
+  $("#look-go").addEventListener("click", genLooks);
+  $("#insp-file").addEventListener("change", (e) => { pickInsp(e.target.files[0]); e.target.value = ""; });
+  $("#insp-go").addEventListener("click", genInsp);
+  $("#trip-go").addEventListener("click", genTrip);
+  route(); renderAll();
+}
+
+function subscribe(name, key, sortDesc) {
+  const timer = setTimeout(() => { if (!S.loaded[key]) { const b = $("#env-banner"); b.hidden = false; b.replaceChildren(h("strong", {}, "Ainda carregando. "), "Seus dados estão demorando para chegar; confira a conexão."); } }, 10000);
+  S.db.collection(name).onSnapshot((snap) => {
+    S[key] = snap.docs.map(d => Object.assign({ id: d.id }, d.data())).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+    if (key === "pieces") S.byId = Object.fromEntries(S.pieces.map(p => [p.id, p]));
+    if (!snap.metadata.fromCache) { S.loaded[key] = true; clearTimeout(timer); if (Object.values(S.loaded).every(Boolean)) $("#env-banner").hidden = true; }
+    else if (snap.size) S.loaded[key] = true;
+    renderAll();
+  }, (err) => {
+    clearTimeout(timer); S.loaded[key] = true;
+    const b = $("#env-banner"); b.hidden = false; b.replaceChildren(h("strong", {}, "Não consegui carregar seus dados. "), err && err.message ? err.message : "Recarregue a página.");
+    renderAll();
+  });
+}
+
+async function boot() {
+  setup();
+  const use = (n) => (window.claude && typeof window.claude.use === "function") ? window.claude.use(n).catch(() => null) : Promise.resolve(null);
+  const [db, assets, sample] = await Promise.all([use("db"), use("assets"), use("sample")]);
+  S.db = db; S.assets = assets; S.sample = sample;
+  if (sample) { try { const lim = await sample.limits(); S.imagesOK = !!(lim && lim.images); } catch (_) { S.imagesOK = false; } }
+  if (!db) {
+    const b = $("#env-banner"); b.hidden = false;
+    b.replaceChildren(h("strong", {}, "Modo de visualização. "), "Abra esta página no claude.ai, com a sua conta, para guardar peças e usar o assistente.");
+    S.loaded = { pieces: true, looks: true, trips: true };
+    renderAll(); return;
+  }
+  subscribe("pieces", "pieces"); subscribe("looks", "looks"); subscribe("trips", "trips");
+}
+boot();
+})();
+</script>
