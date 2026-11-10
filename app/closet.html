@@ -201,6 +201,17 @@ dialog.pick-dlg { width: min(760px, calc(100vw - 24px)); }
 .qrow .st { color: var(--muted); white-space: nowrap; }
 .qrow .st.ok { color: var(--ok); } .qrow .st.warn { color: var(--warn); } .qrow .st.err { color: var(--err); }
 
+/* inspiration catalog */
+.insp-grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+.insp { position: relative; border: 0; padding: 0; border-radius: var(--r); overflow: hidden; background: var(--sunk); cursor: pointer; box-shadow: var(--shadow); aspect-ratio: 4 / 5; text-align: left; }
+.insp img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.insp:hover img { filter: brightness(1.05); }
+.insp .pill { position: absolute; top: 8px; left: 8px; background: var(--surface); color: var(--ink); }
+.insp .pill.on { background: var(--accent); color: var(--accent-ink); }
+.insp .cap { position: absolute; inset: auto 0 0; padding: 22px 10px 8px; background: linear-gradient(transparent, rgba(0,0,0,.72)); color: #fff; font-size: .8rem; line-height: 1.3; }
+.insp-photo { border-radius: var(--r); overflow: hidden; background: var(--sunk); display: grid; place-items: center; }
+.insp-photo img { width: 100%; max-height: 70vh; object-fit: contain; display: block; }
+
 /* looks */
 .looks { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); }
 .look { background: var(--surface); border-radius: var(--r); box-shadow: var(--shadow); padding: 14px; display: grid; gap: 10px; align-content: start; min-width: 0; }
@@ -283,7 +294,7 @@ footer { color: var(--muted); font-size: .82rem; padding-block: 0 32px; }
     <nav class="tabs" aria-label="Seções">
       <a href="#armario" data-tab="armario">Armário</a>
       <a href="#looks" data-tab="looks">Looks</a>
-      <a href="#inspiracao" data-tab="inspiracao">Inspiração</a>
+      <a href="#inspiracao" data-tab="inspiracao">Inspirações</a>
       <a href="#mala" data-tab="mala">Mala</a>
       <a href="#dossie" data-tab="dossie">Dossiê</a>
     </nav>
@@ -347,33 +358,16 @@ footer { color: var(--muted); font-size: .82rem; padding-block: 0 32px; }
 
   <!-- INSPIRAÇÃO -->
   <section class="view" id="v-inspiracao" data-view="inspiracao" hidden>
-    <div class="head">
-      <h2>Inspiração</h2>
-      <p class="lede">Viu um look no Instagram ou no Pinterest? Suba o print. O Claude descreve o look, procura as peças equivalentes no seu armário e diz o que falta.</p>
-    </div>
-    <div class="split">
-      <div style="display:grid;gap:12px">
-        <div class="preview" id="insp-preview">
-          <span>Toque para escolher<br>a foto de inspiração</span>
-          <label class="btn file-btn" aria-label="Escolher foto de inspiração"><input type="file" id="insp-file" accept="image/*"></label>
-        </div>
-        <label class="field">Algum ajuste? <small>(opcional)</small>
-          <input type="text" id="insp-note" placeholder="Ex.: versão para o trabalho, sem salto">
-        </label>
-        <div class="toolbar"><button class="btn primary" id="insp-go" disabled>Montar com minhas peças</button><button class="btn ghost" id="insp-stop" hidden>Parar</button></div>
-        <div id="insp-status"></div>
+    <div id="insp-home" style="display:grid;gap:20px">
+      <div class="alb-head" style="align-items:flex-end;flex-wrap:wrap">
+        <div class="head"><h2>Catálogo de inspirações</h2><p class="lede">Guarde aqui os looks que você viu no Instagram, no Pinterest ou em qualquer lugar da internet. Quando quiser, abra uma inspiração e o Claude monta o look com as suas peças.</p></div>
+        <label class="btn primary file-btn">+ Adicionar inspirações<input type="file" id="insp-files" accept="image/*" multiple></label>
       </div>
-      <div id="insp-out" style="display:grid;gap:16px;min-width:0">
-        <div class="empty">
-          <h3>Como funciona</h3>
-          <ol>
-            <li>Salve o print do look que você gostou.</li>
-            <li>Escolha a foto aqui ao lado.</li>
-            <li>Veja <strong>o equivalente no seu armário</strong> de cada peça, os looks montados e o que valeria comprar.</li>
-          </ol>
-        </div>
-      </div>
+      <div id="insp-queue" class="queue" hidden></div>
+      <div class="chips" id="insp-filter"></div>
+      <div id="insp-grid" class="insp-grid"></div>
     </div>
+    <div id="insp-detail" hidden></div>
   </section>
 
   <!-- MALA -->
@@ -483,10 +477,10 @@ const PRESETS = ["Trabalho, dia normal", "Reunião importante", "Jantar a dois",
 const S = {
   db: null, assets: null, sample: null, imagesOK: false,
   pieces: [], looks: [], trips: [], albums: [], lookAlbums: [], byId: {},
-  loaded: { pieces: false, looks: false, trips: false, albums: false, lookAlbums: false, profile: false }, profile: null, dossieOpen: null, dossieEdit: false, newLookAlbum: false, lookAlbumOpen: null,
+  loaded: { pieces: false, looks: false, trips: false, albums: false, lookAlbums: false, profile: false, inspos: false }, profile: null, dossieOpen: null, dossieEdit: false, newLookAlbum: false, lookAlbumOpen: null,
   filter: { q: "", view: "home", key: null }, savedFilter: "todos", newAlbum: false, newTrip: false,
   editing: null, openTrip: null,
-  insp: { file: null, blob: null, result: null },
+  inspos: [], inspOpen: null, inspFilter: "todas",
 };
 
 // ---------- helpers ----------
@@ -1101,7 +1095,7 @@ function renderSaved() {
   fill(out, albumBar, ...list.map(l => {
     const del = h("button", { class: "btn small ghost", onclick: async () => {
       if (!del.dataset.armed) { del.dataset.armed = "1"; del.textContent = "Confirmar"; return; }
-      try { await S.db.collection("looks").doc(l.id).delete(); if (l.inspo && S.assets && !S.looks.some(x => x.id !== l.id && x.inspo === l.inspo)) { try { await S.assets.delete(l.inspo); } catch (_) {} } } catch (e) { toast(errText(e)); }
+      try { await S.db.collection("looks").doc(l.id).delete(); if (l.inspo && S.assets && !S.looks.some(x => x.id !== l.id && x.inspo === l.inspo) && !S.inspos.some(x => x.photo === l.inspo)) { try { await S.assets.delete(l.inspo); } catch (_) {} } } catch (e) { toast(errText(e)); }
     } }, "Remover");
     const open = S.lookAlbumOpen === l.id;
     const albBtn = S.lookAlbums.length ? h("button", { class: "btn small" + (open ? " dark" : ""), onclick: () => { S.lookAlbumOpen = open ? null : l.id; renderSaved(); } }, "Álbuns") : null;
@@ -1137,56 +1131,124 @@ ${cat}
 
 Responda em português do Brasil, só com JSON:
 {"descricao":"a vibe do look em 1 frase","pecas_foto":[{"item":"blazer oversized bege","id":"id da minha peça mais parecida ou null","nota":"o quanto se parece"}],"looks":[{"titulo":"...","pecas":["id1","id2"],"porque":"1 ou 2 frases"}],"faltando":[{"item":"...","porque":"..."}]}`;
-async function pickInsp(file) {
-  if (!file) return;
-  try {
-    const img = await loadImage(file);
-    S.insp.blob = await toJpeg(img, 1280, null, 0.84);
-    const pv = $("#insp-preview");
-    pv.querySelector("span")?.remove();
-    pv.querySelector("img")?.remove();
-    pv.prepend(h("img", { src: URL.createObjectURL(S.insp.blob), alt: "Foto de inspiração" }));
-    $("#insp-go").disabled = false;
-  } catch (e) { toast(errText(e)); }
+async function addInspos(files) {
+  files = [...files].filter(f => f && (!f.type || f.type.startsWith("image/")));
+  if (!files.length) return;
+  location.hash = "#inspiracao"; S.inspOpen = null; renderInspos();
+  const q = $("#insp-queue"); q.hidden = false;
+  if (!S.db || !S.assets) {
+    q.prepend(h("div", { class: "qrow" }, h("span", { class: "st err", style: "white-space:normal" }, "Esta tela não consegue guardar fotos. Abra o Closet Virtual pelo claude.ai, logada na sua conta.")));
+    return;
+  }
+  for (const file of files) {
+    const st = h("span", { class: "st" }, "Guardando…");
+    q.prepend(h("div", { class: "qrow" }, h("span", { class: "fn" }, file.name || "inspiração"), st));
+    try {
+      const img = await loadImage(file);
+      const blob = await toJpeg(img, 1280, null, 0.84);
+      const up = await S.assets.upload(blob, { type: "image/jpeg" });
+      await S.db.collection("inspos").add({ photo: up.id, note: "", result: null, createdAt: Date.now() });
+      st.textContent = "Guardada"; st.className = "st ok";
+    } catch (e) { st.textContent = errText(e); st.className = "st err"; }
+  }
+  setTimeout(() => { q.querySelectorAll(".qrow").forEach(r => { if (r.querySelector(".st.ok")) r.remove(); }); if (!q.children.length) q.hidden = true; }, 4000);
 }
-async function genInsp() {
-  const status = $("#insp-status"), out = $("#insp-out");
-  if (!S.insp.blob) return;
-  if (!S.sample || !S.imagesOK) { say(status, "O Claude precisa ver a foto. Abra a página no claude.ai.", "err"); return; }
-  if (S.pieces.filter(p => p.available !== false).length < 2) { say(status, "Cadastre algumas peças no Armário primeiro.", "err"); return; }
-  thinking(status, "Analisando a inspiração e procurando no seu armário…");
-  try {
-    const r = await ask(INSP_PROMPT({ note: $("#insp-note").value.trim(), cat: catalogText() }), { images: [S.insp.blob] }, { go: $("#insp-go"), stop: $("#insp-stop") });
-    fill(status);
-    const blob = S.insp.blob;
-    let inspoId = null;
-    const uploadInspo = async () => {
-      if (!inspoId && S.assets) inspoId = (await S.assets.upload(blob, { type: "image/jpeg" })).id;
-      return inspoId ? { inspo: inspoId } : {};
-    };
-    const pf = Array.isArray(r.pecas_foto) ? r.pecas_foto : [];
-    const looks = (Array.isArray(r.looks) ? r.looks : []).filter(l => validIds(l.pecas).length);
-    const falt = Array.isArray(r.faltando) ? r.faltando : [];
-    fill(out, 
-      h("div", { class: "panel" },
-        h("span", { class: "mono" }, "O look da foto"),
-        h("h3", {}, r.descricao || "Look de inspiração"),
-        pf.length ? h("table", { class: "match" }, h("tbody", {}, pf.map(x => {
-          const p = x && S.byId[x.id];
-          return h("tr", {},
-            h("td", {}, h("strong", {}, x.item || "")),
-            h("td", { class: "th" }, p ? h("img", { src: imgSrc(p.photo), alt: "" }) : null),
-            h("td", {}, p ? [p.name, x.nota ? h("br") : null, x.nota ? h("span", { class: "lede" }, x.nota) : null] : h("span", { class: "pill warn" }, "não tem")));
-        }))) : null
-      ),
-      looks.length ? h("div", { class: "looks" }, looks.map(l => {
-        const look = { titulo: l.titulo, pecas: validIds(l.pecas), porque: l.porque, origem: "inspiracao", pedido: r.descricao || "" };
-        return lookCard(look, { actions: [saveLookBtn(look, uploadInspo)] });
-      })) : h("p", { class: "msg err" }, "Não encontrei peças suficientes no seu armário para recriar esse look."),
-      falt.length ? h("div", { class: "panel" }, h("span", { class: "mono" }, "Para chegar mais perto"),
-        h("ul", { style: "margin:0;padding-left:18px;display:grid;gap:6px" }, falt.map(x => h("li", {}, h("strong", {}, x.item || ""), x.porque ? " · " + x.porque : "")))) : null
-    );
-  } catch (e) { say(status, errText(e), e.code === "cancelled" ? "" : "err"); }
+const inspLooks = (i) => i.result && Array.isArray(i.result.looks) ? i.result.looks.filter(l => validIds(l.pecas).length).length : 0;
+function renderInspos() {
+  const home = $("#insp-home"), detail = $("#insp-detail"); if (!home) return;
+  const open = S.inspOpen && S.inspos.find(x => x.id === S.inspOpen);
+  home.hidden = !!open; detail.hidden = !open;
+  if (open) { renderInspDetail(open, detail); return; }
+  const grid = $("#insp-grid"), f = $("#insp-filter");
+  if (!S.loaded.inspos) { fill(f); thinking(grid, "Carregando suas inspirações…"); return; }
+  const fresh = S.inspos.filter(i => !i.result), done = S.inspos.length - fresh.length;
+  const chip = (key, label, c) => h("button", { class: "chip", "aria-pressed": String(S.inspFilter === key), onclick: () => { S.inspFilter = key; renderInspos(); } }, label, h("b", {}, c));
+  fill(f, S.inspos.length ? [chip("todas", "Todas", S.inspos.length), chip("novas", "Ainda não montadas", fresh.length), chip("montadas", "Já montadas", done)] : null);
+  const list = S.inspFilter === "novas" ? fresh : S.inspFilter === "montadas" ? S.inspos.filter(i => i.result) : S.inspos;
+  if (!S.inspos.length) {
+    fill(grid, h("div", { class: "empty", style: "grid-column:1/-1" },
+      h("h3", {}, "Seu catálogo ainda está vazio"),
+      h("ol", {},
+        h("li", {}, "Viu um look que amou? Tire um print ou salve a foto."),
+        h("li", {}, "Toque em ", h("strong", {}, "+ Adicionar inspirações"), " e escolha várias de uma vez."),
+        h("li", {}, "Quando quiser, abra uma inspiração e toque em ", h("strong", {}, "Montar com minhas peças"), "."))));
+    return;
+  }
+  if (!list.length) { fill(grid, h("p", { class: "lede", style: "grid-column:1/-1" }, S.inspFilter === "novas" ? "Você já montou todas as suas inspirações." : "Nenhuma inspiração montada ainda.")); return; }
+  fill(grid, ...list.map(i => {
+    const n = inspLooks(i);
+    return h("button", { class: "insp", onclick: () => { S.inspOpen = i.id; renderInspos(); window.scrollTo(0, 0); }, "aria-label": i.result && i.result.descricao ? i.result.descricao : "Inspiração" },
+      h("img", { src: imgSrc(i.photo), alt: "", loading: "lazy" }),
+      h("span", { class: "pill mono" + (i.result ? " on" : "") }, i.result ? (n === 1 ? "1 look" : n + " looks") : "nova"),
+      i.result && i.result.descricao ? h("span", { class: "cap" }, i.result.descricao) : null);
+  }));
+}
+async function photoBlob(id) {
+  const res = await fetch(imgSrc(id));
+  if (!res.ok) throw { message: "Não consegui abrir a foto da inspiração." };
+  return res.blob();
+}
+function renderInspDetail(i, el) {
+  const status = h("div");
+  const note = h("input", { type: "text", value: i.note || "", placeholder: "Ex.: versão para o trabalho, sem salto", "aria-label": "Ajuste para o look" });
+  const stop = h("button", { class: "btn ghost", hidden: true }, "Parar");
+  const go = h("button", { class: "btn primary", onclick: async () => {
+    if (!S.sample || !S.imagesOK) { say(status, "O Claude precisa ver a foto. Abra a página no claude.ai.", "err"); return; }
+    if (S.pieces.filter(p => p.available !== false).length < 2) { say(status, "Cadastre algumas peças no Armário primeiro.", "err"); return; }
+    thinking(status, "Analisando a inspiração e procurando no seu armário…");
+    try {
+      const blob = await photoBlob(i.photo);
+      const r = await ask(INSP_PROMPT({ note: note.value.trim(), cat: catalogText() }), { images: [blob] }, { go, stop });
+      const result = {
+        descricao: String(r.descricao || ""),
+        pecas_foto: (Array.isArray(r.pecas_foto) ? r.pecas_foto : []).map(x => ({ item: String(x && x.item || ""), id: x && S.byId[x.id] ? x.id : null, nota: String(x && x.nota || "") })),
+        looks: (Array.isArray(r.looks) ? r.looks : []).map(l => ({ titulo: String(l.titulo || "Look"), pecas: validIds(l.pecas), porque: String(l.porque || "") })).filter(l => l.pecas.length),
+        faltando: (Array.isArray(r.faltando) ? r.faltando : []).map(x => ({ item: String(x && x.item || ""), porque: String(x && x.porque || "") }))
+      };
+      await S.db.collection("inspos").doc(i.id).update({ result, note: note.value.trim(), analyzedAt: Date.now() });
+      fill(status);
+    } catch (e) { say(status, errText(e), e.code === "cancelled" ? "" : "err"); }
+  } }, i.result ? "Montar de novo" : "Montar com minhas peças");
+  const del = h("button", { class: "btn small danger", onclick: async () => {
+    if (!del.dataset.armed) { del.dataset.armed = "1"; del.textContent = "Toque de novo para excluir"; return; }
+    try {
+      await S.db.collection("inspos").doc(i.id).delete();
+      if (S.assets && !S.looks.some(l => l.inspo === i.photo)) { try { await S.assets.delete(i.photo); } catch (_) {} }
+      S.inspOpen = null; renderInspos();
+    } catch (e) { toast(errText(e)); }
+  } }, "Excluir inspiração");
+  const r = i.result;
+  const pf = r ? r.pecas_foto || [] : [], looks = r ? (r.looks || []).filter(l => validIds(l.pecas).length) : [], falt = r ? r.faltando || [] : [];
+  fill(el,
+    h("div", { class: "toolbar" }, h("button", { class: "btn small ghost", onclick: () => { S.inspOpen = null; renderInspos(); } }, "← Catálogo"), h("span", { style: "flex:1" }), del),
+    h("div", { class: "split" },
+      h("div", { style: "display:grid;gap:12px;min-width:0" },
+        h("div", { class: "insp-photo" }, h("img", { src: imgSrc(i.photo), alt: "Foto de inspiração" })),
+        h("label", { class: "field" }, h("span", {}, "Algum ajuste? ", h("small", {}, "(opcional)")), note),
+        h("div", { class: "toolbar" }, go, stop), status),
+      h("div", { style: "display:grid;gap:16px;min-width:0" },
+        !r ? h("div", { class: "empty" }, h("h3", {}, "Ainda não montada"),
+          h("p", { class: "lede" }, "Toque em Montar com minhas peças. O Claude descreve o look, mostra o equivalente de cada peça no seu armário, monta as combinações e diz o que falta.")) : [
+        h("div", { class: "panel" },
+          h("span", { class: "mono" }, "O look da foto"),
+          h("h3", {}, r.descricao || "Look de inspiração"),
+          pf.length ? h("table", { class: "match" }, h("tbody", {}, pf.map(x => {
+            const p = x && S.byId[x.id];
+            return h("tr", {},
+              h("td", {}, h("strong", {}, x.item || "")),
+              h("td", { class: "th" }, p ? h("img", { src: imgSrc(p.photo), alt: "" }) : null),
+              h("td", {}, p ? [p.name, x.nota ? h("br") : null, x.nota ? h("span", { class: "lede" }, x.nota) : null] : h("span", { class: "pill warn" }, "não tem")));
+          }))) : null),
+        looks.length ? h("div", { class: "looks" }, looks.map(l => {
+          const look = { titulo: l.titulo, pecas: validIds(l.pecas), porque: l.porque, origem: "inspiracao", pedido: r.descricao || "", inspo: i.photo };
+          const already = S.looks.some(x => x.inspo === i.photo && x.titulo === l.titulo);
+          return lookCard(look, { actions: [already ? h("span", { class: "pill ok" }, "Salvo em Meus looks") : saveLookBtn(look)] });
+        })) : h("p", { class: "msg err" }, "Não encontrei peças suficientes no seu armário para recriar esse look."),
+        falt.length ? h("div", { class: "panel" }, h("span", { class: "mono" }, "Para chegar mais perto"),
+          h("ul", { style: "margin:0;padding-left:18px;display:grid;gap:6px" }, falt.map(x => h("li", {}, h("strong", {}, x.item || ""), x.porque ? " · " + x.porque : "")))) : null]
+      )
+    )
+  );
 }
 
 // ---------- MALA ----------
@@ -1487,7 +1549,7 @@ function renderDossie() {
 }
 
 // ---------- wiring ----------
-function renderAll() { renderCloset(); fillAnchor(); renderSaved(); renderTrips(); renderDossie(); }
+function renderAll() { renderCloset(); fillAnchor(); renderSaved(); renderTrips(); renderDossie(); renderInspos(); }
 function setup() {
   fill($("#pf-cat"), ...CATS.map(([k, l]) => h("option", { value: k }, l)));
   $("#pf-form").addEventListener("input", (e) => { $("#pf-form-lbl").textContent = FORM_LABEL[clampForm(e.target.value)]; });
@@ -1502,13 +1564,12 @@ function setup() {
     const files = [...(e.clipboardData?.files || [])].filter(f => f.type.startsWith("image/"));
     if (!files.length) return;
     e.preventDefault();
-    if ((location.hash.slice(1) || "armario") === "inspiracao") pickInsp(files[0]); else addFiles(files);
+    if ((location.hash.slice(1) || "armario") === "inspiracao") addInspos(files); else addFiles(files);
   });
   $("#q").addEventListener("input", (e) => { S.filter.q = e.target.value; renderCloset(); });
   fill($("#look-presets"), ...PRESETS.map(p => h("button", { class: "chip", type: "button", onclick: () => { const ta = $("#look-req"); ta.value = ta.value.trim() ? ta.value.trim() + ". " + p : p; ta.focus(); } }, p)));
   $("#look-go").addEventListener("click", genLooks);
-  $("#insp-file").addEventListener("change", (e) => { pickInsp(e.target.files[0]); e.target.value = ""; });
-  $("#insp-go").addEventListener("click", genInsp);
+  $("#insp-files").addEventListener("change", (e) => { const f = [...e.target.files]; e.target.value = ""; addInspos(f); });
   $("#manual-look").addEventListener("click", manualLook);
   fill($("#t-type"), ...TRIP_TYPES.map(x => h("option", {}, x)));
   fill($("#t-season"), ...TRIP_SEASONS.map(x => h("option", {}, x)));
@@ -1518,7 +1579,8 @@ function setup() {
   $("#trip-create-ai").addEventListener("click", () => createTrip(true));
   $("nav.tabs").addEventListener("click", (e) => { const a = e.target.closest("a"); if (!a) return;
     if (a.dataset.tab === "armario" && location.hash.slice(1) === "armario") { S.filter.q = ""; $("#q").value = ""; goView("home"); }
-    if (a.dataset.tab === "mala" && location.hash.slice(1) === "mala") { S.openTrip = null; renderTrips(); } });
+    if (a.dataset.tab === "mala" && location.hash.slice(1) === "mala") { S.openTrip = null; renderTrips(); }
+    if (a.dataset.tab === "inspiracao" && location.hash.slice(1) === "inspiracao") { S.inspOpen = null; renderInspos(); } });
   route(); renderAll();
 }
 
@@ -1576,10 +1638,10 @@ async function boot() {
   if (!db) {
     const b = $("#env-banner"); b.hidden = false;
     fill(b, h("strong", {}, "Modo de visualização. "), "Abra esta página no claude.ai, com a sua conta, para guardar peças e usar o assistente.");
-    S.loaded = { pieces: true, looks: true, trips: true, albums: true, lookAlbums: true, profile: true };
+    S.loaded = { pieces: true, looks: true, trips: true, albums: true, lookAlbums: true, profile: true, inspos: true };
     renderAll(); return;
   }
-  subscribe("pieces", "pieces"); subscribe("looks", "looks"); subscribe("trips", "trips"); subscribe("albums", "albums"); subscribe("lookAlbums", "lookAlbums");
+  subscribe("pieces", "pieces"); subscribe("looks", "looks"); subscribe("trips", "trips"); subscribe("albums", "albums"); subscribe("lookAlbums", "lookAlbums"); subscribe("inspos", "inspos");
   S.db.doc("profile/me").onSnapshot((snap) => { S.profile = snap.exists ? snap.data() : null; S.loaded.profile = true; renderDossie(); }, () => { S.loaded.profile = true; renderDossie(); });
 }
 boot();

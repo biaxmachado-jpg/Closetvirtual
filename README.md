@@ -16,7 +16,8 @@ App publicado: https://claude.ai/artifact/R4sEkrMeJu1x2P79sqEZvG
   (com a opção "Adicionar mesmo assim").
 - **Estou numa loja**: foto de uma peça na loja → mostra o que você já tem de parecido e com o que combina.
 - **Looks**: peça um look em texto ("jantar de sexta, friozinho") e receba combinações com as suas peças.
-- **Inspiração**: suba um print do Instagram/Pinterest → equivalentes no seu armário, looks e o que falta.
+- **Catálogo de inspirações**: vá guardando prints de looks do Instagram, Pinterest ou de qualquer site. Quando quiser, abra uma inspiração
+  e o Claude monta o look com as suas peças; o resultado fica salvo junto da foto. Filtros de "ainda não montadas" e "já montadas".
 - **Álbuns**: peças organizadas em Parte de cima, Parte de baixo, Terceira peça, Peça única, Calçado, Acessório, Praia e Fitness, com "+" para adicionar direto na categoria, e álbuns próprios (Trabalho, Favoritas…).
 - **Álbuns de looks**: organize os looks salvos em álbuns como Looks de festa ou Looks de inverno.
 - **Dossiê**: biotipo, estilos e cartela de cores (Inverno Brilhante), com as cores que favorecem e as que evitar. O Claude usa o dossiê ao montar looks e malas e ao avaliar peças na loja.
@@ -25,5 +26,5 @@ App publicado: https://claude.ai/artifact/R4sEkrMeJu1x2P79sqEZvG
 ## Código
 
 Tudo está em `app/closet.html` (HTML, CSS e JS sem dependências). Ele usa as capacidades do Artifact:
-`db` (catálogo, looks e malas), `assets` (fotos) e `sample` (Claude com visão).
+`db` (catálogo, looks, malas e inspirações), `assets` (fotos) e `sample` (Claude com visão).
 Para atualizar o app, edite o arquivo e publique de novo no mesmo endereço.
