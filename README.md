@@ -11,6 +11,9 @@ App publicado: https://claude.ai/artifact/R4sEkrMeJu1x2P79sqEZvG
 - **Armário**: suba fotos das peças (inclusive fotos de looks inteiros). O Claude identifica cada peça,
   recorta a foto e cria a ficha (nome, categoria, cores, tecido, estações, formalidade, estilo).
   Busca e filtros por categoria. Toque numa peça para corrigir ou excluir.
+- **Prints do Google Fotos**: já usa o guarda-roupa do Google Fotos? Tire prints da tela de Itens rolando a lista
+  e suba todos de uma vez. O Claude separa cada peça da grade, ignora botões e abas, recorta cada uma e pula as que já estão no armário
+  (com a opção "Adicionar mesmo assim").
 - **Estou numa loja**: foto de uma peça na loja → mostra o que você já tem de parecido e com o que combina.
 - **Looks**: peça um look em texto ("jantar de sexta, friozinho") e receba combinações com as suas peças.
 - **Inspiração**: suba um print do Instagram/Pinterest → equivalentes no seu armário, looks e o que falta.

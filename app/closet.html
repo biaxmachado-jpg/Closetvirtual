@@ -196,7 +196,7 @@ dialog.pick-dlg { width: min(760px, calc(100vw - 24px)); }
 
 /* upload queue */
 .queue { display: grid; gap: 6px; }
-.qrow { display: flex; gap: 10px; align-items: center; font-size: .88rem; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; }
+.qrow { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; font-size: .88rem; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; }
 .qrow .fn { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .qrow .st { color: var(--muted); white-space: nowrap; }
 .qrow .st.ok { color: var(--ok); } .qrow .st.warn { color: var(--warn); } .qrow .st.err { color: var(--err); }
@@ -302,6 +302,9 @@ footer { color: var(--muted); font-size: .82rem; padding-block: 0 32px; }
     <div class="toolbar">
       <label class="btn primary file-btn">Adicionar peças
         <input type="file" id="add-files" accept="image/*" multiple>
+      </label>
+      <label class="btn file-btn" title="Suba prints da tela de roupas do Google Fotos: o Claude separa cada peça e pula as que você já tem">Prints do Google Fotos
+        <input type="file" id="gp-files" accept="image/*" multiple>
       </label>
       <label class="btn file-btn dark">Estou numa loja
         <input type="file" id="shop-file" accept="image/*">
@@ -544,11 +547,11 @@ function loadImage(file) {
   });
 }
 // box = [x0,y0,x1,y1] in 0..1
-function toJpeg(img, maxSide, box, q) {
+function toJpeg(img, maxSide, box, q, padding) {
   const W = img.naturalWidth, H = img.naturalHeight;
   let sx = 0, sy = 0, sw = W, sh = H;
   if (box) {
-    const pad = 0.04;
+    const pad = padding == null ? 0.04 : padding;
     const x0 = Math.max(0, box[0] - pad), y0 = Math.max(0, box[1] - pad);
     const x1 = Math.min(1, box[2] + pad), y1 = Math.min(1, box[3] + pad);
     sx = x0 * W; sy = y0 * H; sw = (x1 - x0) * W; sh = (y1 - y0) * H;
@@ -716,18 +719,15 @@ function emptyCloset() {
   return h("div", { class: "empty" },
     h("h3", {}, "Seu armário ainda está vazio"),
     h("ol", {},
-      h("li", {}, h("strong", {}, "No Google Fotos"), ", abra o guarda-roupa (ou um álbum com suas peças), selecione as fotos e toque em ", h("strong", {}, "Baixar"), "."),
-      h("li", {}, "Aqui, toque em ", h("strong", {}, "Adicionar peças"), " ou no ", h("strong", {}, "+"), " de uma categoria e escolha várias fotos de uma vez."),
+      h("li", {}, h("strong", {}, "Já usa o guarda-roupa do Google Fotos?"), " Abra a tela de Itens e tire prints rolando a lista, deixando um pedacinho repetido entre um print e outro. Aqui, toque em ", h("strong", {}, "Prints do Google Fotos"), " e escolha todos de uma vez. O Claude separa cada peça e pula as que você já tem."),
+      h("li", {}, "Ou toque em ", h("strong", {}, "Adicionar peças"), " (ou no ", h("strong", {}, "+"), " de uma categoria) e escolha fotos das suas roupas, várias de uma vez."),
       h("li", {}, "O Claude identifica cada peça, inclusive quando a foto mostra um look inteiro, e cria a ficha. Toque numa peça para corrigir o que quiser.")
     ),
     h("p", { class: "lede" }, "Fotos com a peça inteira, bem iluminada e com fundo liso dão os melhores resultados.")
   );
 }
 
-const CLASSIFY_PROMPT = (opts) => `Você está catalogando o guarda-roupa de uma pessoa. A imagem é uma foto de roupa: pode ser uma peça sozinha (em cabide, cama, chão, manequim) ou uma pessoa usando um look.
-Identifique cada peça de roupa, calçado, bolsa ou acessório marcante que esteja bem visível. Ignore rostos, móveis e objetos que não são roupa. Se a foto mostra uma única peça, retorne só ela. Não invente peças que não aparecem.
-${opts && opts.cat ? `A pessoa está adicionando peças da categoria "${CAT_LABEL[opts.cat]}" (${CAT_HINT[opts.cat]}). Retorne só as peças dessa categoria.` : ""}
-Para cada peça, em português do Brasil:
+const PIECE_FIELDS = `Para cada peça, em português do Brasil:
 - nome: nome curto e específico que a pessoa reconheceria, ex.: "Camisa de linho branca", "Calça wide leg jeans escuro"
 - categoria: exatamente uma destas: cima (camisetas, blusas, camisas, tricôs), baixo (calças, saias, shorts), terceira (blazers, casacos, jaquetas, cardigãs, coletes), unica (vestidos, macacões), calcado, acessorio (bolsas, cintos, bijuterias, lenços, óculos), praia (biquínis, maiôs, saídas), fitness (roupa de treino), outro
 - tipo: o tipo da peça em uma ou duas palavras, ex.: "camiseta", "camisa", "calça", "saia", "blazer", "vestido", "tênis", "bolsa"
@@ -737,9 +737,30 @@ Para cada peça, em português do Brasil:
 - estacoes: subconjunto de ["verão","meia-estação","inverno"]
 - formalidade: número de 1 (casa/academia) a 5 (festa/black tie)
 - estilo: até 3 palavras, ex.: "básico", "romântico", "alfaiataria", "esportivo", "boho"
-- caixa: [x0, y0, x1, y1], o retângulo que contém a peça, em frações de 0 a 1 da largura e da altura da imagem, origem no canto superior esquerdo
+`;
+const CLASSIFY_PROMPT = (opts) => `Você está catalogando o guarda-roupa de uma pessoa. A imagem é uma foto de roupa: pode ser uma peça sozinha (em cabide, cama, chão, manequim) ou uma pessoa usando um look.
+Identifique cada peça de roupa, calçado, bolsa ou acessório marcante que esteja bem visível. Ignore rostos, móveis e objetos que não são roupa. Se a foto mostra uma única peça, retorne só ela. Não invente peças que não aparecem.
+${opts && opts.cat ? `A pessoa está adicionando peças da categoria "${CAT_LABEL[opts.cat]}" (${CAT_HINT[opts.cat]}). Retorne só as peças dessa categoria.` : ""}
+${PIECE_FIELDS}- caixa: [x0, y0, x1, y1], o retângulo que contém a peça, em frações de 0 a 1 da largura e da altura da imagem, origem no canto superior esquerdo
 Responda só com JSON neste formato:
 {"pecas":[{"nome":"Calça wide leg jeans escuro","categoria":"baixo","tipo":"calça","cores":["azul-escuro"],"estampa":"lisa","tecido":"jeans","estacoes":["meia-estação","inverno"],"formalidade":2,"estilo":["básico"],"caixa":[0.2,0.45,0.8,0.98]}]}`;
+
+// Prints of the Google Photos wardrobe grid ("Itens"): one tile per piece, plus duplicate detection
+const GPHOTOS_PROMPT = (known) => `A imagem é um print (captura de tela) do celular mostrando o guarda-roupa do Google Fotos: uma grade de peças já recortadas, cada uma num quadrado cinza-claro de cantos arredondados.
+Ignore tudo que não é peça: barra de status, títulos ("Itens", "Looks"), abas de filtro (Joias, Saias, Calçados…), ordenação ("Mais recente"), botões como "Criar", ícones e a barra de navegação do celular.
+Ignore quadrados cortados pela borda da tela ou cobertos por botões em que menos de 60% da peça aparece: eles vão aparecer inteiros em outro print.
+Cada quadrado é uma peça. Retorne uma entrada por quadrado, na ordem de leitura (linha por linha, da esquerda para a direita).
+${known ? `Peças que a pessoa já tem no armário (id | categoria | nome | cores):
+${known}
+Se a peça do quadrado for claramente a mesma peça já cadastrada (mesmo tipo, mesmas cores e mesmos detalhes), preencha "repetida" com o id dela. Peças só parecidas, como duas calças pretas de modelos diferentes, não são repetidas: deixe "".` : `Deixe "repetida" como "".`}
+${PIECE_FIELDS}- caixa: [x0, y0, x1, y1], o retângulo do quadrado cinza inteiro da peça, em frações de 0 a 1 da largura e da altura da imagem, origem no canto superior esquerdo
+- repetida: id da peça já cadastrada que é a mesma, ou ""
+Responda só com JSON neste formato:
+{"pecas":[{"nome":"Saia de paetê prateada","categoria":"baixo","tipo":"saia","cores":["prata","preto"],"estampa":"lisa","tecido":"paetê","estacoes":["verão","meia-estação"],"formalidade":5,"estilo":["festa"],"caixa":[0.37,0.33,0.63,0.45],"repetida":""}]}`;
+function knownText(batch) {
+  return S.pieces.map(p => [p.id, CAT_SHORT[p.cat] || p.cat, p.name, (p.colors || []).join("/")].join(" | "))
+    .concat(batch.map(b => [b.id, CAT_SHORT[b.cat] || b.cat, b.name, b.colors.join("/")].join(" | "))).join("\n");
+}
 
 function pieceFromAI(p, photo, src, opts) {
   const cat = opts && opts.cat ? opts.cat : (CAT_LABEL[p.categoria] ? p.categoria : "outro");
@@ -764,32 +785,36 @@ async function addFiles(files, opts) {
     q.scrollIntoView({ block: "nearest" });
     return;
   }
+  if (opts && opts.gphotos) opts = Object.assign({}, opts, { batch: [] });
   const jobs = [...files].map(file => {
     const st = h("span", { class: "st" }, "Na fila");
     const row = h("div", { class: "qrow" }, h("span", { class: "fn" }, file.name || "foto"), st);
     q.prepend(row);
-    return { file, st, opts: opts || {} };
+    return { file, st, row, opts: opts || {} };
   });
   q.scrollIntoView({ block: "nearest" });
   let i = 0;
   const worker = async () => { while (i < jobs.length) await processFile(jobs[i++]); };
-  await Promise.all([worker(), worker()]);
+  // prints run one at a time so each one can see the pieces the previous print added
+  await Promise.all(opts && opts.gphotos ? [worker()] : [worker(), worker()]);
   setTimeout(() => { if (![...q.querySelectorAll(".st")].some(s => !s.classList.contains("ok") && !s.classList.contains("warn") && !s.classList.contains("err"))) { q.querySelectorAll(".qrow").forEach(r => { if (r.querySelector(".st.ok")) r.remove(); }); if (!q.children.length) q.hidden = true; } }, 6000);
 }
-async function processFile({ file, st, opts }) {
+async function processFile({ file, st, row, opts }) {
+  const gp = !!opts.gphotos;
   const set = (t, k) => { st.textContent = t; st.className = "st " + (k || ""); };
   let img, full;
   try {
     set("Lendo foto…");
     img = await loadImage(file);
-    full = await toJpeg(img, 1280, null, 0.82);
+    full = await toJpeg(img, gp ? 1600 : 1280, null, 0.82);
   } catch (e) { set("Não consegui abrir essa foto. Tente JPG ou PNG.", "err"); return; }
   let found = null, why = "";
   if (S.sample) {
     try {
       set("Identificando peças…");
-      const res = await S.sample.json(CLASSIFY_PROMPT(opts), { images: [full] });
-      found = (res && Array.isArray(res.pecas) ? res.pecas : []).filter(p => p && p.nome).slice(0, 8);
+      const prompt = gp ? GPHOTOS_PROMPT(knownText(opts.batch)) : CLASSIFY_PROMPT(opts);
+      const res = await S.sample.json(prompt, { images: [full] });
+      found = (res && Array.isArray(res.pecas) ? res.pecas : []).filter(p => p && p.nome).slice(0, gp ? 24 : 8);
       if (!found.length) { found = null; why = "o Claude não reconheceu peças"; }
     } catch (e) { why = e && e.code === "not_granted" ? "você não permitiu o Claude" : errText(e).replace(/\.$/, ""); }
   } else why = "o Claude não consegue ver fotos nesta tela";
@@ -801,16 +826,31 @@ async function processFile({ file, st, opts }) {
       set("Salva sem ficha (" + why + "). Toque na peça para preencher.", "warn");
       return;
     }
-    for (const p of found) {
+    const known = new Set(S.pieces.map(p => p.id).concat(gp ? opts.batch.map(b => b.id) : []));
+    const repeated = gp ? found.filter(p => p.repetida && known.has(String(p.repetida))) : [];
+    const fresh = found.filter(p => !repeated.includes(p));
+    const save = async (p) => {
       const box = normBox(p.caixa);
       let photo = src.id;
-      if (box && (found.length > 1 || (box[2] - box[0]) * (box[3] - box[1]) < 0.7)) {
-        const crop = await toJpeg(img, 720, box, 0.85);
+      if (box && (gp || found.length > 1 || (box[2] - box[0]) * (box[3] - box[1]) < 0.7)) {
+        const crop = await toJpeg(img, 720, box, 0.85, gp ? 0.004 : 0.04);
         photo = (await S.assets.upload(crop, { type: "image/jpeg" })).id;
       }
-      await S.db.collection("pieces").add(pieceFromAI(p, photo, src.id, opts));
-    }
-    set(found.length === 1 ? "1 peça adicionada" : found.length + " peças adicionadas", "ok");
+      const piece = pieceFromAI(p, photo, src.id, opts);
+      await S.db.collection("pieces").add(piece);
+      if (gp) opts.batch.push({ id: "novo" + (opts.batch.length + 1), name: piece.name, cat: piece.cat, colors: piece.colors });
+    };
+    for (const p of fresh) await save(p);
+    const added = fresh.length === 1 ? "1 peça adicionada" : fresh.length + " peças adicionadas";
+    if (!repeated.length) { set(added, "ok"); return; }
+    set(added + " · " + repeated.length + (repeated.length === 1 ? " já estava" : " já estavam") + " no armário", "warn");
+    const names = repeated.map(p => String(p.nome)).join(", ");
+    const again = h("button", { class: "btn small", type: "button", title: names, onclick: async () => {
+      again.disabled = true; again.textContent = "Adicionando…";
+      try { for (const p of repeated) await save(p); again.remove(); set(added + " · repetidas adicionadas também", "ok"); }
+      catch (e) { again.disabled = false; again.textContent = "Tentar de novo"; toast(errText(e)); }
+    } }, "Adicionar mesmo assim");
+    row.append(h("span", { class: "mono", style: "flex-basis:100%;white-space:normal" }, "Pulei: " + names), again);
   } catch (e) {
     set("Não consegui salvar: " + errText(e) + (e && e.code ? " [" + e.code + "]" : ""), "err");
   }
@@ -1456,6 +1496,7 @@ function setup() {
   $("#pf-del").addEventListener("click", deletePiece);
   $("#pf-orig").addEventListener("change", (e) => { const p = S.byId[S.editing]; if (p) $("#pf-img").src = imgSrc(e.target.checked && p.src ? p.src : p.photo); });
   $("#add-files").addEventListener("change", (e) => { const f = [...e.target.files]; e.target.value = ""; addFiles(f); });
+  $("#gp-files").addEventListener("change", (e) => { const f = [...e.target.files]; e.target.value = ""; addFiles(f, { gphotos: true }); });
   $("#shop-file").addEventListener("change", (e) => { const f = e.target.files[0]; e.target.value = ""; if (f) shopCheck(f); });
   document.addEventListener("paste", (e) => {
     const files = [...(e.clipboardData?.files || [])].filter(f => f.type.startsWith("image/"));
