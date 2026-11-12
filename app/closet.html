@@ -461,7 +461,7 @@ const CATS = [
   ["calcado", "Calçado"], ["acessorio", "Acessório"], ["praia", "Praia"], ["fitness", "Fitness"], ["outro", "Outros"]
 ];
 const CAT_HINT = {
-  cima: "sem manga, manga curta, manga longa, suéteres", baixo: "calças, saias, shorts",
+  cima: "camisetas, suéteres, blusas, camisas, croppeds", baixo: "calças, saias, shorts",
   terceira: "blazers, jaquetas, cardigãs, coletes, casacos de inverno", unica: "vestidos, macacões, macaquinhos",
   calcado: "tênis, com salto, sem salto", acessorio: "bolsas, cintos, bijuterias, lenços, óculos",
   praia: "biquínis, maiôs, saídas de praia", fitness: "leggings, tops, roupas de treino", outro: "o que não se encaixa acima"
@@ -469,13 +469,17 @@ const CAT_HINT = {
 const CAT_LABEL = Object.fromEntries(CATS);
 // subgroups inside a category
 const SUBS = {
-  cima: [["sem-manga", "Sem manga"], ["manga-curta", "Manga curta"], ["manga-longa", "Manga longa"], ["sueter", "Suéteres"]],
+  cima: [["sem-manga", "Sem manga"], ["manga-curta", "Manga curta"], ["manga-longa", "Manga longa"], ["sueter", "Suéteres"], ["blusa", "Blusas"], ["camisa", "Camisas"], ["cropped", "Croppeds"]],
   baixo: [["calca", "Calças"], ["saia", "Saias"], ["shorts", "Shorts"]],
   unica: [["vestido", "Vestidos"], ["macacao", "Macacões"], ["macaquinho", "Macaquinhos"]],
   calcado: [["tenis", "Tênis"], ["salto", "Com salto"], ["sem-salto", "Sem salto"]],
   terceira: [["blazer", "Blazers"], ["jaqueta", "Jaquetas"], ["cardiga", "Cardigãs"], ["colete", "Coletes"], ["casaco", "Casacos de inverno"]],
 };
 const SUB_LABEL = Object.fromEntries(Object.values(SUBS).flat());
+// bump when a category's groups change, so pieces sorted under the old groups can be reviewed
+const SUB_VER = { cima: 2 };
+const subVer = (cat) => SUB_VER[cat] || 1;
+const needsReview = (p) => SUB_VER[p.cat] && (p.subV || 1) < SUB_VER[p.cat] && ["sem-manga", "manga-curta", "manga-longa"].includes(p.sub);
 const subOf = (cat, v) => (SUBS[cat] || []).some(([k]) => k === v) ? v : "";
 const CAT_SHORT = { cima: "cima", baixo: "baixo", terceira: "3ª peça", unica: "peça única", calcado: "calçado", acessorio: "acessório", praia: "praia", fitness: "fitness", outro: "outro" };
 const TRIP_TYPES = ["Cidade", "Praia", "Campo", "Neve", "Trabalho", "Cruzeiro"];
@@ -702,7 +706,7 @@ function renderCloset() {
         h("div", { class: "chips" }, chip(null, "Todas", all.length),
           SUBS[key].map(([k, l]) => chip(k, l, all.filter(p => p.sub === k).length)),
           none.length ? chip("none", "Sem subgrupo", none.length) : null),
-        none.length ? sortSubsBar(key, none) : null);
+        none.length || all.some(needsReview) ? sortSubsBar(key, none, all.filter(needsReview)) : null);
       if (sub === "none") list = none;
       else if (sub) { list = all.filter(p => p.sub === sub); title = SUB_LABEL[sub]; hint = null; addOpts = { cat: key, sub }; }
     }
@@ -739,8 +743,10 @@ function renderCloset() {
 // classify existing pieces into subgroups, one photo at a time
 let sorting = null;
 const SUB_DESC = {
-  "sem-manga": "regatas, tops, blusas sem manga ou de alcinha", "manga-curta": "camisetas, blusas e camisas de manga curta",
-  "manga-longa": "blusas, camisas e camisetas de manga comprida ou 3/4", "sueter": "suéteres, tricôs, malhas grossas, moletons",
+  "cropped": "tops curtos que deixam a barriga à mostra", "camisa": "camisas sociais e camisas de linho, com botões e colarinho",
+  "sueter": "suéteres, tricôs, malhas grossas, moletons", "blusa": "blusas de tecidos mais nobres, como linho, sarja, seda, cetim e crepe; mais formais, para trabalho",
+  "sem-manga": "bodies, regatas e camisetas sem manga, casuais, de algodão ou poliéster", "manga-curta": "camisetas de manga curta, casuais, de algodão ou poliéster",
+  "manga-longa": "camisetas de manga longa, casuais, de algodão ou poliéster",
   "calca": "calças de qualquer modelo, inclusive jeans e alfaiataria", "saia": "saias e saias-shorts", "shorts": "shorts e bermudas",
   "vestido": "vestidos de qualquer comprimento", "macacao": "macacões, de perna comprida ou pantacourt", "macaquinho": "macaquinhos, de perna curta",
   "tenis": "tênis", "salto": "qualquer calçado com salto, inclusive anabela, bloco e botas de salto", "sem-salto": "rasteiras, sapatilhas, mocassins, chinelos, botas e sandálias baixas",
@@ -749,11 +755,16 @@ const SUB_DESC = {
   "casaco": "casacos de inverno: sobretudos, trench coats, parkas, puffers, casacos de lã ou teddy",
 };
 const SUB_PROMPT = (p) => `A foto mostra uma peça de roupa (${CAT_LABEL[p.cat].toLowerCase()}) chamada "${p.name}"${p.type ? " (" + p.type + ")" : ""}. Classifique em exatamente um destes grupos:
-${SUBS[p.cat].map(([k]) => `- "${k}": ${SUB_DESC[k]}`).join("\n")}
+${(p.cat === "cima" ? ["cropped", "camisa", "sueter", "blusa", "sem-manga", "manga-curta", "manga-longa"] : SUBS[p.cat].map(([k]) => k)).map(k => `- "${k}": ${SUB_DESC[k]}`).join("\n")}${p.cat === "cima" ? "\nUse o primeiro grupo da lista que servir para a peça." : ""}
 Responda só com JSON: {"subgrupo":"${SUBS[p.cat][0][0]}"}`;
 // obvious cases decided from the piece's type and name, without asking Claude
 function guessSub(p) {
   const t = fold((p.type || "") + " " + (p.name || ""));
+  if (p.cat === "cima") {
+    if (/cropped/.test(t)) return "cropped";
+    if (/\bcamisa\b/.test(t)) return "camisa";
+    if (/sueter|trico|moletom|pulover|suéter/.test(t)) return "sueter";
+  }
   if (p.cat === "baixo") {
     if (/saia[- ]?short|\bsaia/.test(t)) return "saia";
     if (/\bshort|bermuda/.test(t)) return "shorts";
@@ -778,15 +789,18 @@ function guessSub(p) {
   }
   return "";
 }
-function sortSubsBar(cat, none) {
-  const msg = h("span", { class: "lede", style: "font-size:.88rem" }, sorting ? sorting.text : none.length === 1 ? "1 peça ainda não tem subgrupo." : none.length + " peças ainda não têm subgrupo.");
+function sortSubsBar(cat, none, review) {
+  const parts = [];
+  if (none.length) parts.push(none.length === 1 ? "1 peça ainda não tem subgrupo" : none.length + " peças ainda não têm subgrupo");
+  if (review && review.length) parts.push((review.length === 1 ? "1 peça separada antes pode ir" : review.length + " peças separadas antes podem ir") + " para Blusas, Camisas ou Croppeds");
+  const msg = h("span", { class: "lede", style: "font-size:.88rem" }, sorting ? sorting.text : parts.join("; ") + ".");
   const btn = h("button", { class: "btn small primary", disabled: !!sorting, onclick: () => sortSubs(cat) }, sorting ? "Separando…" : "Separar com o Claude");
   return h("div", { class: "toolbar" }, btn, msg, S.sample && S.imagesOK ? null : h("span", { class: "lede", style: "font-size:.88rem" }, "Ou toque numa peça e escolha o subgrupo."));
 }
 async function sortSubs(cat) {
   if (sorting) return;
   const canSee = !!(S.sample && S.imagesOK);
-  const todo = S.pieces.filter(p => p.cat === cat && !subOf(cat, p.sub));
+  const todo = S.pieces.filter(p => p.cat === cat && (!subOf(cat, p.sub) || needsReview(p)));
   let done = 0, failed = 0;
   sorting = { text: "" };
   try {
@@ -794,13 +808,13 @@ async function sortSubs(cat) {
       sorting.text = "Separando " + (done + failed + 1) + " de " + todo.length + "…"; renderCloset();
       try {
         const guess = guessSub(p);
-        if (guess) { await S.db.collection("pieces").doc(p.id).update({ sub: guess }); done++; continue; }
+        if (guess) { await S.db.collection("pieces").doc(p.id).update({ sub: guess, subV: subVer(cat) }); done++; continue; }
         if (!canSee) { failed++; continue; }
         const blob = await photoBlob(p.photo);
         const r = await S.sample.json(SUB_PROMPT(p), { images: [blob], modelTier: "quick" });
         const sub = subOf(cat, r && r.subgrupo);
         if (!sub) { failed++; continue; }
-        await S.db.collection("pieces").doc(p.id).update({ sub }); done++;
+        await S.db.collection("pieces").doc(p.id).update({ sub, subV: subVer(cat) }); done++;
       } catch (e) {
         failed++;
         if (e && (e.code === "not_granted" || e.code === "rate_limited" || e.code === "sampling_disabled")) { toast(errText(e)); break; }
@@ -833,7 +847,7 @@ const PIECE_FIELDS = `Para cada peça, em português do Brasil:
 - estacoes: subconjunto de ["verão","meia-estação","inverno"]
 - formalidade: número de 1 (casa/academia) a 5 (festa/black tie)
 - estilo: até 3 palavras, ex.: "básico", "romântico", "alfaiataria", "esportivo", "boho"
-- subgrupo: só para a categoria cima, exatamente um destes: "sem-manga" (regatas, tops, blusas sem manga ou de alcinha), "manga-curta" (camisetas, blusas e camisas de manga curta), "manga-longa" (blusas, camisas e camisetas de manga comprida ou 3/4), "sueter" (suéteres, tricôs, malhas grossas, moletons); para a categoria baixo, exatamente um destes: "calca" (calças de qualquer modelo, inclusive jeans e alfaiataria), "saia" (saias e saias-shorts), "shorts" (shorts e bermudas); para a categoria unica, exatamente um destes: "vestido" (vestidos de qualquer comprimento), "macacao" (macacões, de perna comprida ou pantacourt), "macaquinho" (macaquinhos, de perna curta); para a categoria calcado, exatamente um destes: "tenis" (tênis), "salto" (qualquer calçado com salto, inclusive anabela, bloco e botas de salto), "sem-salto" (rasteiras, sapatilhas, mocassins, chinelos, botas e sandálias baixas); para a categoria terceira, exatamente um destes: "blazer" (blazers e paletós), "jaqueta" (jaquetas jeans, de couro, bomber, corta-vento e outras jaquetas leves), "cardiga" (cardigãs, casaquinhos de tricô ou malha, kimonos), "colete" (coletes de qualquer tipo), "casaco" (casacos de inverno: sobretudos, trench coats, parkas, puffers, casacos de lã ou teddy); para as outras categorias, ""
+- subgrupo: só para a categoria cima, exatamente um destes, decidindo nesta ordem: "cropped" (tops curtos que deixam a barriga à mostra), "camisa" (camisas sociais e camisas de linho, com botões e colarinho), "sueter" (suéteres, tricôs, malhas grossas, moletons), "blusa" (blusas de tecidos mais nobres, como linho, sarja, seda, cetim e crepe, mais formais, para trabalho), e só para camisetas casuais de algodão ou poliéster: "sem-manga" (bodies, regatas e camisetas sem manga), "manga-curta" (camisetas de manga curta), "manga-longa" (camisetas de manga longa); para a categoria baixo, exatamente um destes: "calca" (calças de qualquer modelo, inclusive jeans e alfaiataria), "saia" (saias e saias-shorts), "shorts" (shorts e bermudas); para a categoria unica, exatamente um destes: "vestido" (vestidos de qualquer comprimento), "macacao" (macacões, de perna comprida ou pantacourt), "macaquinho" (macaquinhos, de perna curta); para a categoria calcado, exatamente um destes: "tenis" (tênis), "salto" (qualquer calçado com salto, inclusive anabela, bloco e botas de salto), "sem-salto" (rasteiras, sapatilhas, mocassins, chinelos, botas e sandálias baixas); para a categoria terceira, exatamente um destes: "blazer" (blazers e paletós), "jaqueta" (jaquetas jeans, de couro, bomber, corta-vento e outras jaquetas leves), "cardiga" (cardigãs, casaquinhos de tricô ou malha, kimonos), "colete" (coletes de qualquer tipo), "casaco" (casacos de inverno: sobretudos, trench coats, parkas, puffers, casacos de lã ou teddy); para as outras categorias, ""
 `;
 const CLASSIFY_PROMPT = (opts) => `Você está catalogando o guarda-roupa de uma pessoa. A imagem é uma foto de roupa: pode ser uma peça sozinha (em cabide, cama, chão, manequim) ou uma pessoa usando um look.
 Identifique cada peça de roupa, calçado, bolsa ou acessório marcante que esteja bem visível. Ignore rostos, móveis e objetos que não são roupa. Se a foto mostra uma única peça, retorne só ela. Não invente peças que não aparecem.
@@ -863,7 +877,7 @@ function pieceFromAI(p, photo, src, opts) {
   const cat = opts && opts.cat ? opts.cat : (CAT_LABEL[p.categoria] ? p.categoria : "outro");
   return {
     name: String(p.nome || "Peça").slice(0, 80), cat, type: String(p.tipo || "").slice(0, 30),
-    sub: subOf(cat, opts && opts.sub && cat === opts.cat ? opts.sub : p.subgrupo),
+    sub: subOf(cat, opts && opts.sub && cat === opts.cat ? opts.sub : p.subgrupo), subV: subVer(cat),
     colors: asList(p.cores).slice(0, 3), pattern: String(p.estampa || "lisa"), fabric: String(p.tecido || ""),
     seasons: asList(p.estacoes).filter(s => SEASON_SHORT[s]), formality: clampForm(p.formalidade),
     style: asList(p.estilo).slice(0, 3), brand: "", notes: "", available: true,
@@ -1033,7 +1047,7 @@ async function savePiece(ev) {
   const id = S.editing; if (!id || !S.db) return closePiece();
   const seasons = ["#pf-s-verao", "#pf-s-meia", "#pf-s-inverno"].filter(s => $(s).checked).map(s => $(s).value);
   const data = {
-    name: $("#pf-name").value.trim() || "Peça", cat: $("#pf-cat").value, sub: subOf($("#pf-cat").value, $("#pf-sub").value), type: $("#pf-type").value.trim(), albums: [...(S.editAlbums || [])], formality: clampForm($("#pf-form").value),
+    name: $("#pf-name").value.trim() || "Peça", cat: $("#pf-cat").value, sub: subOf($("#pf-cat").value, $("#pf-sub").value), subV: subVer($("#pf-cat").value), type: $("#pf-type").value.trim(), albums: [...(S.editAlbums || [])], formality: clampForm($("#pf-form").value),
     colors: asList($("#pf-colors").value), pattern: $("#pf-pattern").value.trim(), fabric: $("#pf-fabric").value.trim(),
     brand: $("#pf-brand").value.trim(), style: asList($("#pf-style").value), notes: $("#pf-notes").value.trim(),
     seasons, available: $("#pf-avail").checked, showOriginal: $("#pf-orig").checked
