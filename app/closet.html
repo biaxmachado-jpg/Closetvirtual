@@ -417,6 +417,7 @@ footer { color: var(--muted); font-size: .82rem; padding-block: 0 32px; }
       <label class="field">Categoria<select id="pf-cat"></select></label>
       <label class="field">Tipo<input type="text" id="pf-type" placeholder="camiseta, saia, blazer…"></label>
     </div>
+    <label class="field" id="pf-sub-wrap">Subgrupo<select id="pf-sub"></select></label>
     <div class="row">
       <label class="field">Formalidade <small id="pf-form-lbl"></small><input type="range" id="pf-form" min="1" max="5" step="1"></label>
     </div>
@@ -460,12 +461,16 @@ const CATS = [
   ["calcado", "Calçado"], ["acessorio", "Acessório"], ["praia", "Praia"], ["fitness", "Fitness"], ["outro", "Outros"]
 ];
 const CAT_HINT = {
-  cima: "camisetas, blusas, camisas, tricôs", baixo: "calças, saias, shorts, bermudas",
+  cima: "sem manga, manga curta, manga longa, suéteres", baixo: "calças, saias, shorts, bermudas",
   terceira: "blazers, casacos, jaquetas, cardigãs, coletes", unica: "vestidos, macacões, macaquinhos",
   calcado: "tênis, sandálias, botas, saltos", acessorio: "bolsas, cintos, bijuterias, lenços, óculos",
   praia: "biquínis, maiôs, saídas de praia", fitness: "leggings, tops, roupas de treino", outro: "o que não se encaixa acima"
 };
 const CAT_LABEL = Object.fromEntries(CATS);
+// subgroups inside a category (only tops for now)
+const SUBS = { cima: [["sem-manga", "Sem manga"], ["manga-curta", "Manga curta"], ["manga-longa", "Manga longa"], ["sueter", "Suéteres"]] };
+const SUB_LABEL = Object.fromEntries(Object.values(SUBS).flat());
+const subOf = (cat, v) => (SUBS[cat] || []).some(([k]) => k === v) ? v : "";
 const CAT_SHORT = { cima: "cima", baixo: "baixo", terceira: "3ª peça", unica: "peça única", calcado: "calçado", acessorio: "acessório", praia: "praia", fitness: "fitness", outro: "outro" };
 const TRIP_TYPES = ["Cidade", "Praia", "Campo", "Neve", "Trabalho", "Cruzeiro"];
 const TRIP_SEASONS = ["Verão", "Outono", "Inverno", "Primavera"];
@@ -478,7 +483,7 @@ const S = {
   db: null, assets: null, sample: null, imagesOK: false,
   pieces: [], looks: [], trips: [], albums: [], lookAlbums: [], byId: {},
   loaded: { pieces: false, looks: false, trips: false, albums: false, lookAlbums: false, profile: false, inspos: false }, profile: null, dossieOpen: null, dossieEdit: false, newLookAlbum: false, lookAlbumOpen: null,
-  filter: { q: "", view: "home", key: null }, savedFilter: "todos", newAlbum: false, newTrip: false,
+  filter: { q: "", view: "home", key: null, sub: null }, savedFilter: "todos", newAlbum: false, newTrip: false,
   editing: null, openTrip: null,
   inspos: [], inspOpen: null, inspFilter: "todas",
 };
@@ -574,7 +579,7 @@ function normBox(b) {
 function catalogText(opts) {
   const list = S.pieces.filter(p => opts && opts.all ? true : p.available !== false);
   return list.map(p => [
-    p.id, (CAT_SHORT[p.cat] || p.cat) + (p.type ? "/" + p.type : ""), p.name,
+    p.id, (CAT_SHORT[p.cat] || p.cat) + (p.type ? "/" + p.type : "") + (p.sub && SUB_LABEL[p.sub] ? " (" + SUB_LABEL[p.sub].toLowerCase() + ")" : ""), p.name,
     (p.colors || []).join("/"), p.pattern && p.pattern !== "lisa" ? p.pattern : "", p.fabric,
     (p.seasons || []).join("/"), "formalidade " + (p.formality || 3), (p.style || []).join("/"), p.brand, p.notes
   ].filter(Boolean).join(" | ")).join("\n");
@@ -630,7 +635,7 @@ function addInput(label, opts, cls) {
   inp.addEventListener("change", (e) => { const f = [...e.target.files]; e.target.value = ""; addFiles(f, opts); });
   return h("label", { class: cls || "btn small file-btn", title: label }, cls ? null : "+ Adicionar", inp);
 }
-function goView(view, key) { S.filter.view = view; S.filter.key = key || null; renderCloset(); window.scrollTo(0, 0); }
+function goView(view, key) { S.filter.view = view; S.filter.key = key || null; S.filter.sub = null; renderCloset(); window.scrollTo(0, 0); }
 function renderCloset() {
   const out = $("#closet");
   const n = S.pieces.length;
@@ -680,7 +685,22 @@ function renderCloset() {
     return;
   }
   let title = "Todas as roupas", hint = null, list = S.pieces, addOpts = {}, extra = null;
-  if (view === "cat") { title = CAT_LABEL[key] || "Outros"; hint = CAT_HINT[key]; list = S.pieces.filter(p => p.cat === key); addOpts = { cat: key }; }
+  let subBar = null;
+  if (view === "cat") {
+    title = CAT_LABEL[key] || "Outros"; hint = CAT_HINT[key]; list = S.pieces.filter(p => p.cat === key); addOpts = { cat: key };
+    if (SUBS[key]) {
+      const all = list, sub = S.filter.sub;
+      const none = all.filter(p => !subOf(key, p.sub));
+      const chip = (k, label, c) => h("button", { class: "chip", "aria-pressed": String((sub || null) === k), onclick: () => { S.filter.sub = k; renderCloset(); } }, label, h("b", {}, c));
+      subBar = h("div", { style: "display:grid;gap:10px" },
+        h("div", { class: "chips" }, chip(null, "Todas", all.length),
+          SUBS[key].map(([k, l]) => chip(k, l, all.filter(p => p.sub === k).length)),
+          none.length ? chip("none", "Sem subgrupo", none.length) : null),
+        none.length ? sortTopsBar(key, none) : null);
+      if (sub === "none") list = none;
+      else if (sub) { list = all.filter(p => p.sub === sub); title = SUB_LABEL[sub]; hint = null; addOpts = { cat: key, sub }; }
+    }
+  }
   if (view === "album") {
     const a = S.albums.find(x => x.id === key);
     if (!a) { goView("home"); return; }
@@ -706,8 +726,47 @@ function renderCloset() {
   fill(out, 
     h("div", { class: "toolbar" }, h("button", { class: "btn small ghost", onclick: () => goView("home") }, "← Álbuns"), view !== "all" ? addInput("Adicionar em " + title, addOpts) : null, extra),
     h("div", { class: "head" }, h("h3", { style: "font-size:1.25rem" }, title, " ", h("span", { class: "mono" }, String(list.length))), hint ? h("p", { class: "lede" }, hint) : null),
+    subBar,
     list.length ? h("div", { class: "grid" }, list.map(pieceCard)) : h("p", { class: "lede" }, view === "album" ? "Nenhuma peça neste álbum ainda. Toque em Escolher peças." : "Nenhuma peça aqui ainda. Toque em + Adicionar.")
   );
+}
+// classify existing pieces into subgroups, one photo at a time
+let sorting = null;
+const SUB_PROMPT = (p) => `A foto mostra uma peça de roupa da parte de cima chamada "${p.name}"${p.type ? " (" + p.type + ")" : ""}. Classifique em exatamente um destes grupos:
+- "sem-manga": regatas, tops, blusas sem manga ou de alcinha
+- "manga-curta": camisetas, blusas e camisas de manga curta
+- "manga-longa": blusas, camisas e camisetas de manga comprida ou 3/4
+- "sueter": suéteres, tricôs, malhas grossas, moletons
+Responda só com JSON: {"subgrupo":"manga-curta"}`;
+function sortTopsBar(cat, none) {
+  const msg = h("span", { class: "lede", style: "font-size:.88rem" }, sorting ? sorting.text : none.length === 1 ? "1 peça ainda não tem subgrupo." : none.length + " peças ainda não têm subgrupo.");
+  const btn = h("button", { class: "btn small primary", disabled: !!sorting, onclick: () => sortTops(cat) }, sorting ? "Separando…" : "Separar com o Claude");
+  return h("div", { class: "toolbar" }, btn, msg, S.sample && S.imagesOK ? null : h("span", { class: "lede", style: "font-size:.88rem" }, "Ou toque numa peça e escolha o subgrupo."));
+}
+async function sortTops(cat) {
+  if (sorting) return;
+  if (!S.sample || !S.imagesOK) { toast("O Claude precisa ver as fotos. Abra a página no claude.ai."); return; }
+  const todo = S.pieces.filter(p => p.cat === cat && !subOf(cat, p.sub));
+  let done = 0, failed = 0;
+  sorting = { text: "" };
+  try {
+    for (const p of todo) {
+      sorting.text = "Separando " + (done + failed + 1) + " de " + todo.length + "…"; renderCloset();
+      try {
+        const blob = await photoBlob(p.photo);
+        const r = await S.sample.json(SUB_PROMPT(p), { images: [blob], modelTier: "quick" });
+        const sub = subOf(cat, r && r.subgrupo);
+        if (!sub) { failed++; continue; }
+        await S.db.collection("pieces").doc(p.id).update({ sub }); done++;
+      } catch (e) {
+        failed++;
+        if (e && (e.code === "not_granted" || e.code === "rate_limited" || e.code === "sampling_disabled")) { toast(errText(e)); break; }
+      }
+    }
+  } finally {
+    sorting = null; renderCloset();
+    toast(done + (done === 1 ? " peça separada" : " peças separadas") + (failed ? " · " + failed + " ficaram sem subgrupo" : ""));
+  }
 }
 function emptyCloset() {
   return h("div", { class: "empty" },
@@ -731,6 +790,7 @@ const PIECE_FIELDS = `Para cada peça, em português do Brasil:
 - estacoes: subconjunto de ["verão","meia-estação","inverno"]
 - formalidade: número de 1 (casa/academia) a 5 (festa/black tie)
 - estilo: até 3 palavras, ex.: "básico", "romântico", "alfaiataria", "esportivo", "boho"
+- subgrupo: só para a categoria cima, exatamente um destes: "sem-manga" (regatas, tops, blusas sem manga ou de alcinha), "manga-curta" (camisetas, blusas e camisas de manga curta), "manga-longa" (blusas, camisas e camisetas de manga comprida ou 3/4), "sueter" (suéteres, tricôs, malhas grossas, moletons); para as outras categorias, ""
 `;
 const CLASSIFY_PROMPT = (opts) => `Você está catalogando o guarda-roupa de uma pessoa. A imagem é uma foto de roupa: pode ser uma peça sozinha (em cabide, cama, chão, manequim) ou uma pessoa usando um look.
 Identifique cada peça de roupa, calçado, bolsa ou acessório marcante que esteja bem visível. Ignore rostos, móveis e objetos que não são roupa. Se a foto mostra uma única peça, retorne só ela. Não invente peças que não aparecem.
@@ -760,6 +820,7 @@ function pieceFromAI(p, photo, src, opts) {
   const cat = opts && opts.cat ? opts.cat : (CAT_LABEL[p.categoria] ? p.categoria : "outro");
   return {
     name: String(p.nome || "Peça").slice(0, 80), cat, type: String(p.tipo || "").slice(0, 30),
+    sub: subOf(cat, opts && opts.sub && cat === opts.cat ? opts.sub : p.subgrupo),
     colors: asList(p.cores).slice(0, 3), pattern: String(p.estampa || "lisa"), fabric: String(p.tecido || ""),
     seasons: asList(p.estacoes).filter(s => SEASON_SHORT[s]), formality: clampForm(p.formalidade),
     style: asList(p.estilo).slice(0, 3), brand: "", notes: "", available: true,
@@ -893,6 +954,7 @@ function openPiece(id) {
   $("#pf-img").src = imgSrc(p.showOriginal && p.src ? p.src : p.photo);
   $("#pf-name").value = p.name || "";
   $("#pf-cat").value = CAT_LABEL[p.cat] ? p.cat : "outro";
+  drawSubSelect(p.sub);
   $("#pf-type").value = p.type || "";
   S.editAlbums = new Set(p.albums || []);
   drawPieceAlbums();
@@ -917,13 +979,18 @@ function drawPieceAlbums() {
   fill(box, ...S.albums.map(a => h("button", { type: "button", class: "chip", "aria-pressed": String(S.editAlbums.has(a.id)),
     onclick: () => { S.editAlbums.has(a.id) ? S.editAlbums.delete(a.id) : S.editAlbums.add(a.id); drawPieceAlbums(); } }, a.name)));
 }
+function drawSubSelect(cur) {
+  const subs = SUBS[$("#pf-cat").value];
+  $("#pf-sub-wrap").hidden = !subs;
+  fill($("#pf-sub"), h("option", { value: "" }, "Sem subgrupo"), (subs || []).map(([k, l]) => h("option", { value: k, selected: k === cur }, l)));
+}
 function closePiece() { const d = $("#piece-dlg"); if (d.close) d.close(); else d.removeAttribute("open"); S.editing = null; }
 async function savePiece(ev) {
   ev.preventDefault();
   const id = S.editing; if (!id || !S.db) return closePiece();
   const seasons = ["#pf-s-verao", "#pf-s-meia", "#pf-s-inverno"].filter(s => $(s).checked).map(s => $(s).value);
   const data = {
-    name: $("#pf-name").value.trim() || "Peça", cat: $("#pf-cat").value, type: $("#pf-type").value.trim(), albums: [...(S.editAlbums || [])], formality: clampForm($("#pf-form").value),
+    name: $("#pf-name").value.trim() || "Peça", cat: $("#pf-cat").value, sub: subOf($("#pf-cat").value, $("#pf-sub").value), type: $("#pf-type").value.trim(), albums: [...(S.editAlbums || [])], formality: clampForm($("#pf-form").value),
     colors: asList($("#pf-colors").value), pattern: $("#pf-pattern").value.trim(), fabric: $("#pf-fabric").value.trim(),
     brand: $("#pf-brand").value.trim(), style: asList($("#pf-style").value), notes: $("#pf-notes").value.trim(),
     seasons, available: $("#pf-avail").checked, showOriginal: $("#pf-orig").checked
@@ -1552,6 +1619,7 @@ function renderDossie() {
 function renderAll() { renderCloset(); fillAnchor(); renderSaved(); renderTrips(); renderDossie(); renderInspos(); }
 function setup() {
   fill($("#pf-cat"), ...CATS.map(([k, l]) => h("option", { value: k }, l)));
+  $("#pf-cat").addEventListener("change", () => drawSubSelect($("#pf-sub").value));
   $("#pf-form").addEventListener("input", (e) => { $("#pf-form-lbl").textContent = FORM_LABEL[clampForm(e.target.value)]; });
   $("#piece-form").addEventListener("submit", savePiece);
   $("#pf-cancel").addEventListener("click", closePiece);
