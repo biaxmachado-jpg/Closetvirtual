@@ -461,14 +461,17 @@ const CATS = [
   ["calcado", "Calçado"], ["acessorio", "Acessório"], ["praia", "Praia"], ["fitness", "Fitness"], ["outro", "Outros"]
 ];
 const CAT_HINT = {
-  cima: "sem manga, manga curta, manga longa, suéteres", baixo: "calças, saias, shorts, bermudas",
+  cima: "sem manga, manga curta, manga longa, suéteres", baixo: "calças, saias, shorts",
   terceira: "blazers, casacos, jaquetas, cardigãs, coletes", unica: "vestidos, macacões, macaquinhos",
   calcado: "tênis, sandálias, botas, saltos", acessorio: "bolsas, cintos, bijuterias, lenços, óculos",
   praia: "biquínis, maiôs, saídas de praia", fitness: "leggings, tops, roupas de treino", outro: "o que não se encaixa acima"
 };
 const CAT_LABEL = Object.fromEntries(CATS);
-// subgroups inside a category (only tops for now)
-const SUBS = { cima: [["sem-manga", "Sem manga"], ["manga-curta", "Manga curta"], ["manga-longa", "Manga longa"], ["sueter", "Suéteres"]] };
+// subgroups inside a category
+const SUBS = {
+  cima: [["sem-manga", "Sem manga"], ["manga-curta", "Manga curta"], ["manga-longa", "Manga longa"], ["sueter", "Suéteres"]],
+  baixo: [["calca", "Calças"], ["saia", "Saias"], ["shorts", "Shorts"]],
+};
 const SUB_LABEL = Object.fromEntries(Object.values(SUBS).flat());
 const subOf = (cat, v) => (SUBS[cat] || []).some(([k]) => k === v) ? v : "";
 const CAT_SHORT = { cima: "cima", baixo: "baixo", terceira: "3ª peça", unica: "peça única", calcado: "calçado", acessorio: "acessório", praia: "praia", fitness: "fitness", outro: "outro" };
@@ -696,7 +699,7 @@ function renderCloset() {
         h("div", { class: "chips" }, chip(null, "Todas", all.length),
           SUBS[key].map(([k, l]) => chip(k, l, all.filter(p => p.sub === k).length)),
           none.length ? chip("none", "Sem subgrupo", none.length) : null),
-        none.length ? sortTopsBar(key, none) : null);
+        none.length ? sortSubsBar(key, none) : null);
       if (sub === "none") list = none;
       else if (sub) { list = all.filter(p => p.sub === sub); title = SUB_LABEL[sub]; hint = null; addOpts = { cat: key, sub }; }
     }
@@ -732,20 +735,32 @@ function renderCloset() {
 }
 // classify existing pieces into subgroups, one photo at a time
 let sorting = null;
-const SUB_PROMPT = (p) => `A foto mostra uma peça de roupa da parte de cima chamada "${p.name}"${p.type ? " (" + p.type + ")" : ""}. Classifique em exatamente um destes grupos:
-- "sem-manga": regatas, tops, blusas sem manga ou de alcinha
-- "manga-curta": camisetas, blusas e camisas de manga curta
-- "manga-longa": blusas, camisas e camisetas de manga comprida ou 3/4
-- "sueter": suéteres, tricôs, malhas grossas, moletons
-Responda só com JSON: {"subgrupo":"manga-curta"}`;
-function sortTopsBar(cat, none) {
+const SUB_DESC = {
+  "sem-manga": "regatas, tops, blusas sem manga ou de alcinha", "manga-curta": "camisetas, blusas e camisas de manga curta",
+  "manga-longa": "blusas, camisas e camisetas de manga comprida ou 3/4", "sueter": "suéteres, tricôs, malhas grossas, moletons",
+  "calca": "calças de qualquer modelo, inclusive jeans e alfaiataria", "saia": "saias e saias-shorts", "shorts": "shorts e bermudas",
+};
+const SUB_PROMPT = (p) => `A foto mostra uma peça de roupa (${CAT_LABEL[p.cat].toLowerCase()}) chamada "${p.name}"${p.type ? " (" + p.type + ")" : ""}. Classifique em exatamente um destes grupos:
+${SUBS[p.cat].map(([k]) => `- "${k}": ${SUB_DESC[k]}`).join("\n")}
+Responda só com JSON: {"subgrupo":"${SUBS[p.cat][0][0]}"}`;
+// obvious cases decided from the piece's type and name, without asking Claude
+function guessSub(p) {
+  const t = fold((p.type || "") + " " + (p.name || ""));
+  if (p.cat === "baixo") {
+    if (/saia[- ]?short|\bsaia/.test(t)) return "saia";
+    if (/\bshort|bermuda/.test(t)) return "shorts";
+    if (/\bcalca|jeans|legging|pantalona|jogger/.test(t)) return "calca";
+  }
+  return "";
+}
+function sortSubsBar(cat, none) {
   const msg = h("span", { class: "lede", style: "font-size:.88rem" }, sorting ? sorting.text : none.length === 1 ? "1 peça ainda não tem subgrupo." : none.length + " peças ainda não têm subgrupo.");
-  const btn = h("button", { class: "btn small primary", disabled: !!sorting, onclick: () => sortTops(cat) }, sorting ? "Separando…" : "Separar com o Claude");
+  const btn = h("button", { class: "btn small primary", disabled: !!sorting, onclick: () => sortSubs(cat) }, sorting ? "Separando…" : "Separar com o Claude");
   return h("div", { class: "toolbar" }, btn, msg, S.sample && S.imagesOK ? null : h("span", { class: "lede", style: "font-size:.88rem" }, "Ou toque numa peça e escolha o subgrupo."));
 }
-async function sortTops(cat) {
+async function sortSubs(cat) {
   if (sorting) return;
-  if (!S.sample || !S.imagesOK) { toast("O Claude precisa ver as fotos. Abra a página no claude.ai."); return; }
+  const canSee = !!(S.sample && S.imagesOK);
   const todo = S.pieces.filter(p => p.cat === cat && !subOf(cat, p.sub));
   let done = 0, failed = 0;
   sorting = { text: "" };
@@ -753,6 +768,9 @@ async function sortTops(cat) {
     for (const p of todo) {
       sorting.text = "Separando " + (done + failed + 1) + " de " + todo.length + "…"; renderCloset();
       try {
+        const guess = guessSub(p);
+        if (guess) { await S.db.collection("pieces").doc(p.id).update({ sub: guess }); done++; continue; }
+        if (!canSee) { failed++; continue; }
         const blob = await photoBlob(p.photo);
         const r = await S.sample.json(SUB_PROMPT(p), { images: [blob], modelTier: "quick" });
         const sub = subOf(cat, r && r.subgrupo);
@@ -790,7 +808,7 @@ const PIECE_FIELDS = `Para cada peça, em português do Brasil:
 - estacoes: subconjunto de ["verão","meia-estação","inverno"]
 - formalidade: número de 1 (casa/academia) a 5 (festa/black tie)
 - estilo: até 3 palavras, ex.: "básico", "romântico", "alfaiataria", "esportivo", "boho"
-- subgrupo: só para a categoria cima, exatamente um destes: "sem-manga" (regatas, tops, blusas sem manga ou de alcinha), "manga-curta" (camisetas, blusas e camisas de manga curta), "manga-longa" (blusas, camisas e camisetas de manga comprida ou 3/4), "sueter" (suéteres, tricôs, malhas grossas, moletons); para as outras categorias, ""
+- subgrupo: só para a categoria cima, exatamente um destes: "sem-manga" (regatas, tops, blusas sem manga ou de alcinha), "manga-curta" (camisetas, blusas e camisas de manga curta), "manga-longa" (blusas, camisas e camisetas de manga comprida ou 3/4), "sueter" (suéteres, tricôs, malhas grossas, moletons); para a categoria baixo, exatamente um destes: "calca" (calças de qualquer modelo, inclusive jeans e alfaiataria), "saia" (saias e saias-shorts), "shorts" (shorts e bermudas); para as outras categorias, ""
 `;
 const CLASSIFY_PROMPT = (opts) => `Você está catalogando o guarda-roupa de uma pessoa. A imagem é uma foto de roupa: pode ser uma peça sozinha (em cabide, cama, chão, manequim) ou uma pessoa usando um look.
 Identifique cada peça de roupa, calçado, bolsa ou acessório marcante que esteja bem visível. Ignore rostos, móveis e objetos que não são roupa. Se a foto mostra uma única peça, retorne só ela. Não invente peças que não aparecem.
