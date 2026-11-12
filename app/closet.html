@@ -463,7 +463,7 @@ const CATS = [
 const CAT_HINT = {
   cima: "sem manga, manga curta, manga longa, suéteres", baixo: "calças, saias, shorts",
   terceira: "blazers, casacos, jaquetas, cardigãs, coletes", unica: "vestidos, macacões, macaquinhos",
-  calcado: "tênis, sandálias, botas, saltos", acessorio: "bolsas, cintos, bijuterias, lenços, óculos",
+  calcado: "tênis, com salto, sem salto", acessorio: "bolsas, cintos, bijuterias, lenços, óculos",
   praia: "biquínis, maiôs, saídas de praia", fitness: "leggings, tops, roupas de treino", outro: "o que não se encaixa acima"
 };
 const CAT_LABEL = Object.fromEntries(CATS);
@@ -472,6 +472,7 @@ const SUBS = {
   cima: [["sem-manga", "Sem manga"], ["manga-curta", "Manga curta"], ["manga-longa", "Manga longa"], ["sueter", "Suéteres"]],
   baixo: [["calca", "Calças"], ["saia", "Saias"], ["shorts", "Shorts"]],
   unica: [["vestido", "Vestidos"], ["macacao", "Macacões"], ["macaquinho", "Macaquinhos"]],
+  calcado: [["tenis", "Tênis"], ["salto", "Com salto"], ["sem-salto", "Sem salto"]],
 };
 const SUB_LABEL = Object.fromEntries(Object.values(SUBS).flat());
 const subOf = (cat, v) => (SUBS[cat] || []).some(([k]) => k === v) ? v : "";
@@ -741,6 +742,7 @@ const SUB_DESC = {
   "manga-longa": "blusas, camisas e camisetas de manga comprida ou 3/4", "sueter": "suéteres, tricôs, malhas grossas, moletons",
   "calca": "calças de qualquer modelo, inclusive jeans e alfaiataria", "saia": "saias e saias-shorts", "shorts": "shorts e bermudas",
   "vestido": "vestidos de qualquer comprimento", "macacao": "macacões, de perna comprida ou pantacourt", "macaquinho": "macaquinhos, de perna curta",
+  "tenis": "tênis", "salto": "qualquer calçado com salto, inclusive anabela, bloco e botas de salto", "sem-salto": "rasteiras, sapatilhas, mocassins, chinelos, botas e sandálias baixas",
 };
 const SUB_PROMPT = (p) => `A foto mostra uma peça de roupa (${CAT_LABEL[p.cat].toLowerCase()}) chamada "${p.name}"${p.type ? " (" + p.type + ")" : ""}. Classifique em exatamente um destes grupos:
 ${SUBS[p.cat].map(([k]) => `- "${k}": ${SUB_DESC[k]}`).join("\n")}
@@ -757,6 +759,11 @@ function guessSub(p) {
     if (/macaquinho/.test(t)) return "macaquinho";
     if (/macacao/.test(t)) return "macacao";
     if (/vestido|chemise/.test(t)) return "vestido";
+  }
+  if (p.cat === "calcado") {
+    if (/sem salto|rasteir|sapatilha|mocassim|loafer|chinelo|slide|papete|alpargata|slipper|mule baixa/.test(t)) return "sem-salto";
+    if (/tenis|sneaker/.test(t)) return "tenis";
+    if (/salto|scarpin|stiletto|anabela|meia[- ]pata|peep toe/.test(t)) return "salto";
   }
   return "";
 }
@@ -815,7 +822,7 @@ const PIECE_FIELDS = `Para cada peça, em português do Brasil:
 - estacoes: subconjunto de ["verão","meia-estação","inverno"]
 - formalidade: número de 1 (casa/academia) a 5 (festa/black tie)
 - estilo: até 3 palavras, ex.: "básico", "romântico", "alfaiataria", "esportivo", "boho"
-- subgrupo: só para a categoria cima, exatamente um destes: "sem-manga" (regatas, tops, blusas sem manga ou de alcinha), "manga-curta" (camisetas, blusas e camisas de manga curta), "manga-longa" (blusas, camisas e camisetas de manga comprida ou 3/4), "sueter" (suéteres, tricôs, malhas grossas, moletons); para a categoria baixo, exatamente um destes: "calca" (calças de qualquer modelo, inclusive jeans e alfaiataria), "saia" (saias e saias-shorts), "shorts" (shorts e bermudas); para a categoria unica, exatamente um destes: "vestido" (vestidos de qualquer comprimento), "macacao" (macacões, de perna comprida ou pantacourt), "macaquinho" (macaquinhos, de perna curta); para as outras categorias, ""
+- subgrupo: só para a categoria cima, exatamente um destes: "sem-manga" (regatas, tops, blusas sem manga ou de alcinha), "manga-curta" (camisetas, blusas e camisas de manga curta), "manga-longa" (blusas, camisas e camisetas de manga comprida ou 3/4), "sueter" (suéteres, tricôs, malhas grossas, moletons); para a categoria baixo, exatamente um destes: "calca" (calças de qualquer modelo, inclusive jeans e alfaiataria), "saia" (saias e saias-shorts), "shorts" (shorts e bermudas); para a categoria unica, exatamente um destes: "vestido" (vestidos de qualquer comprimento), "macacao" (macacões, de perna comprida ou pantacourt), "macaquinho" (macaquinhos, de perna curta); para a categoria calcado, exatamente um destes: "tenis" (tênis), "salto" (qualquer calçado com salto, inclusive anabela, bloco e botas de salto), "sem-salto" (rasteiras, sapatilhas, mocassins, chinelos, botas e sandálias baixas); para as outras categorias, ""
 `;
 const CLASSIFY_PROMPT = (opts) => `Você está catalogando o guarda-roupa de uma pessoa. A imagem é uma foto de roupa: pode ser uma peça sozinha (em cabide, cama, chão, manequim) ou uma pessoa usando um look.
 Identifique cada peça de roupa, calçado, bolsa ou acessório marcante que esteja bem visível. Ignore rostos, móveis e objetos que não são roupa. Se a foto mostra uma única peça, retorne só ela. Não invente peças que não aparecem.
