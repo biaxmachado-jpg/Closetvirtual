@@ -471,6 +471,7 @@ const CAT_LABEL = Object.fromEntries(CATS);
 const SUBS = {
   cima: [["sem-manga", "Sem manga"], ["manga-curta", "Manga curta"], ["manga-longa", "Manga longa"], ["sueter", "Suéteres"]],
   baixo: [["calca", "Calças"], ["saia", "Saias"], ["shorts", "Shorts"]],
+  unica: [["vestido", "Vestidos"], ["macacao", "Macacões"], ["macaquinho", "Macaquinhos"]],
 };
 const SUB_LABEL = Object.fromEntries(Object.values(SUBS).flat());
 const subOf = (cat, v) => (SUBS[cat] || []).some(([k]) => k === v) ? v : "";
@@ -739,6 +740,7 @@ const SUB_DESC = {
   "sem-manga": "regatas, tops, blusas sem manga ou de alcinha", "manga-curta": "camisetas, blusas e camisas de manga curta",
   "manga-longa": "blusas, camisas e camisetas de manga comprida ou 3/4", "sueter": "suéteres, tricôs, malhas grossas, moletons",
   "calca": "calças de qualquer modelo, inclusive jeans e alfaiataria", "saia": "saias e saias-shorts", "shorts": "shorts e bermudas",
+  "vestido": "vestidos de qualquer comprimento", "macacao": "macacões, de perna comprida ou pantacourt", "macaquinho": "macaquinhos, de perna curta",
 };
 const SUB_PROMPT = (p) => `A foto mostra uma peça de roupa (${CAT_LABEL[p.cat].toLowerCase()}) chamada "${p.name}"${p.type ? " (" + p.type + ")" : ""}. Classifique em exatamente um destes grupos:
 ${SUBS[p.cat].map(([k]) => `- "${k}": ${SUB_DESC[k]}`).join("\n")}
@@ -750,6 +752,11 @@ function guessSub(p) {
     if (/saia[- ]?short|\bsaia/.test(t)) return "saia";
     if (/\bshort|bermuda/.test(t)) return "shorts";
     if (/\bcalca|jeans|legging|pantalona|jogger/.test(t)) return "calca";
+  }
+  if (p.cat === "unica") {
+    if (/macaquinho/.test(t)) return "macaquinho";
+    if (/macacao/.test(t)) return "macacao";
+    if (/vestido|chemise/.test(t)) return "vestido";
   }
   return "";
 }
@@ -808,7 +815,7 @@ const PIECE_FIELDS = `Para cada peça, em português do Brasil:
 - estacoes: subconjunto de ["verão","meia-estação","inverno"]
 - formalidade: número de 1 (casa/academia) a 5 (festa/black tie)
 - estilo: até 3 palavras, ex.: "básico", "romântico", "alfaiataria", "esportivo", "boho"
-- subgrupo: só para a categoria cima, exatamente um destes: "sem-manga" (regatas, tops, blusas sem manga ou de alcinha), "manga-curta" (camisetas, blusas e camisas de manga curta), "manga-longa" (blusas, camisas e camisetas de manga comprida ou 3/4), "sueter" (suéteres, tricôs, malhas grossas, moletons); para a categoria baixo, exatamente um destes: "calca" (calças de qualquer modelo, inclusive jeans e alfaiataria), "saia" (saias e saias-shorts), "shorts" (shorts e bermudas); para as outras categorias, ""
+- subgrupo: só para a categoria cima, exatamente um destes: "sem-manga" (regatas, tops, blusas sem manga ou de alcinha), "manga-curta" (camisetas, blusas e camisas de manga curta), "manga-longa" (blusas, camisas e camisetas de manga comprida ou 3/4), "sueter" (suéteres, tricôs, malhas grossas, moletons); para a categoria baixo, exatamente um destes: "calca" (calças de qualquer modelo, inclusive jeans e alfaiataria), "saia" (saias e saias-shorts), "shorts" (shorts e bermudas); para a categoria unica, exatamente um destes: "vestido" (vestidos de qualquer comprimento), "macacao" (macacões, de perna comprida ou pantacourt), "macaquinho" (macaquinhos, de perna curta); para as outras categorias, ""
 `;
 const CLASSIFY_PROMPT = (opts) => `Você está catalogando o guarda-roupa de uma pessoa. A imagem é uma foto de roupa: pode ser uma peça sozinha (em cabide, cama, chão, manequim) ou uma pessoa usando um look.
 Identifique cada peça de roupa, calçado, bolsa ou acessório marcante que esteja bem visível. Ignore rostos, móveis e objetos que não são roupa. Se a foto mostra uma única peça, retorne só ela. Não invente peças que não aparecem.
