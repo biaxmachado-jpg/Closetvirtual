@@ -18,7 +18,7 @@ App publicado: https://claude.ai/artifact/R4sEkrMeJu1x2P79sqEZvG
 - **Looks**: peça um look em texto ("jantar de sexta, friozinho") e receba combinações com as suas peças.
 - **Catálogo de inspirações**: vá guardando prints de looks do Instagram, Pinterest ou de qualquer site. Quando quiser, abra uma inspiração
   e o Claude monta o look com as suas peças; o resultado fica salvo junto da foto. Filtros de "ainda não montadas" e "já montadas".
-- **Álbuns**: peças organizadas em Parte de cima (com subgrupos Sem manga, Manga curta, Manga longa e Suéteres), Parte de baixo (Calças, Saias e Shorts), Peça única (Vestidos, Macacões e Macaquinhos) e Calçado (Tênis, Com salto e Sem salto), Parte de baixo, Terceira peça, Peça única, Calçado, Acessório, Praia e Fitness, com "+" para adicionar direto na categoria, e álbuns próprios (Trabalho, Favoritas…).
+- **Álbuns**: peças organizadas em Parte de cima (com subgrupos Sem manga, Manga curta, Manga longa e Suéteres), Parte de baixo (Calças, Saias e Shorts), Peça única (Vestidos, Macacões e Macaquinhos), Calçado (Tênis, Com salto e Sem salto) e Terceira peça (Blazers, Jaquetas, Cardigãs, Coletes e Casacos de inverno), Parte de baixo, Terceira peça, Peça única, Calçado, Acessório, Praia e Fitness, com "+" para adicionar direto na categoria, e álbuns próprios (Trabalho, Favoritas…).
 - **Álbuns de looks**: organize os looks salvos em álbuns como Looks de festa ou Looks de inverno.
 - **Dossiê**: biotipo, estilos e cartela de cores (Inverno Brilhante), com as cores que favorecem e as que evitar. O Claude usa o dossiê ao montar looks e malas e ao avaliar peças na loja.
 - **Malas**: viagens com destino, datas, tipo e estação; roupas, looks por dia e checklist com progresso. O Claude pode montar ou completar a mala.
