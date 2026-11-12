@@ -1736,12 +1736,44 @@ async function blobToB64(b) {
 }
 function renderPhotoExport() {
   const el = $("#photo-export"); if (!el) return;
+  if (S.photoImport && !S.photoImport.done && S.db && S.assets) {
+    el.hidden = false;
+    if (S.importing) { fill(el, h("div", { class: "thinking" }, h("span", { class: "spin" }), S.importing)); return; }
+    fill(el, h("strong", {}, "Fotos tratadas prontas. "), "O Claude tirou o fundo e as caixas e desvirou as fotos. Toque para trocar as fotos das peças; as originais continuam guardadas (na ficha, Mostrar foto original). ",
+      h("button", { class: "btn small primary", style: "margin-top:8px", onclick: applyTreated }, "Aplicar fotos tratadas"));
+    return;
+  }
   const todo = S.pieces.filter(p => (p.photoV || 1) < PHOTO_V && p.photo);
   if (!S.db || !S.assets || !S.loaded.pieces || !todo.length || S.exportDone) { el.hidden = true; return; }
   el.hidden = false;
   if (S.exporting) { fill(el, h("div", { class: "thinking" }, h("span", { class: "spin" }), S.exporting)); return; }
   fill(el, h("strong", {}, "Tratamento das fotos. "), todo.length + (todo.length === 1 ? " foto ainda não foi tratada" : " fotos ainda não foram tratadas") + " (tirar o fundo, as caixas e desvirar). Toque no botão para enviar as fotos ao Claude; ele trata tudo e devolve aqui. ",
     h("button", { class: "btn small primary", style: "margin-top:8px", onclick: exportPhotos }, "Enviar fotos para tratamento"));
+}
+async function applyTreated() {
+  if (S.importing) return;
+  const imp = S.photoImport; let ok = 0, skipped = 0, failed = 0;
+  try {
+    S.importing = "Baixando as fotos tratadas…"; renderPhotoExport();
+    const r = await fetch(imgSrc(imp.bundle)); if (!r.ok) throw { message: "Não consegui baixar as fotos tratadas." };
+    const data = await r.json(); const ids = Object.keys(data); let n = 0;
+    for (const id of ids) {
+      S.importing = "Trocando fotos " + (++n) + " de " + ids.length + "…"; renderPhotoExport();
+      const it = data[id], p = S.byId[id];
+      if (!p || p.photo !== it.old) { skipped++; continue; }
+      try {
+        if (it.keep) { await S.db.collection("pieces").doc(id).update({ photoV: PHOTO_V }); ok++; continue; }
+        const bin = atob(it.b64), buf = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) buf[i] = bin.charCodeAt(i);
+        const up = await S.assets.upload(new Blob([buf], { type: it.type }), { type: it.type });
+        await S.db.collection("pieces").doc(id).update({ photo: up.id, src: p.src && p.src !== p.photo ? p.src : p.photo, showOriginal: false, photoV: PHOTO_V });
+        ok++;
+      } catch (e) { failed++; if (e && e.code === "quota_exceeded") { toast(errText(e)); break; } }
+    }
+    await S.db.doc("profile/photoImport").update({ done: true, ok, skipped, failed, appliedAt: Date.now() });
+    toast(ok + " fotos trocadas" + (skipped ? " · " + skipped + " peças mudaram e ficaram como estavam" : "") + (failed ? " · " + failed + " falharam" : ""));
+  } catch (e) { toast(errText(e)); }
+  finally { S.importing = null; renderPhotoExport(); renderCloset(); }
 }
 async function exportPhotos() {
   if (S.exporting) return;
@@ -1811,6 +1843,7 @@ async function boot() {
     renderAll(); return;
   }
   subscribe("pieces", "pieces"); subscribe("looks", "looks"); subscribe("trips", "trips"); subscribe("albums", "albums"); subscribe("lookAlbums", "lookAlbums"); subscribe("inspos", "inspos");
+  S.db.doc("profile/photoImport").onSnapshot((snap) => { S.photoImport = snap.exists ? snap.data() : null; renderPhotoExport(); }, () => {});
   S.db.doc("profile/me").onSnapshot((snap) => { S.profile = snap.exists ? snap.data() : null; S.loaded.profile = true; renderDossie(); }, () => { S.loaded.profile = true; renderDossie(); });
 }
 boot();
